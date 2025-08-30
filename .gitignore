@@ -1,2 +1,3 @@
-bmp_source/
-images/
+bmp_source/*
+images/*
+entrada.sh

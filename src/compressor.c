@@ -3,7 +3,7 @@
 #include <string.h>
 #include "jpeg.h"
 #include "bitmap.h"
-#include "math.h"
+#include <math.h>
 
 typedef struct
 {
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
     if (!(input = fopen(source_name, "rb")))
     {
 
-        printf("Error: could not open input file.");
+        printf("Error: could not open input file.\n");
         exit(1);
     }
     printf("File successfully opened!\n");
