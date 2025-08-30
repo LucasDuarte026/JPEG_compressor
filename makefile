@@ -3,11 +3,10 @@ all:
 full:
 	g++ -Wall -o ./bin/main ./src/*.c   -Iinclude
 
-
 debug:
-	g++  -g3 ./src/*.c  -o ./bin/main ./src/*.c   -Iinclude
-fullDebug :
-	g++  -Wall -g3 ./src/*.c  -o ./bin/main ./src/*.c   -Iinclude
+	g++ -g3 ./src/*.c -o ./bin/main -Iinclude
+fullDebug:
+	g++  -Wall -g3 ./src/*.c -o ./bin/main -Iinclude
 	
 run:
 	./bin/main
