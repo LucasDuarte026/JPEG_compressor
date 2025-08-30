@@ -41,6 +41,6 @@ void printHeaders(BITMAPFILEHEADER *FileHeader, BITMAPINFOHEADER *InfoHeader);
 void leituraInfoHeader(FILE *F, BITMAPINFOHEADER *INFO_H);
 void leituraHeader(FILE *F, BITMAPFILEHEADER *H);
 void exportImage(char *output_filename, BITMAPFILEHEADER *FileHeader, BITMAPINFOHEADER *InfoHeader, Pixel **Image);
-Pixel **loadBMPImage(FILE *input, BITMAPINFOHEADER InfoHeader, Pixel **Image);
+Pixel **loadBMPImage(FILE *input, BITMAPINFOHEADER *InfoHeader);
 
 #endif

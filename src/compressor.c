@@ -10,10 +10,15 @@ typedef struct
     unsigned char Cb;
     unsigned char Cr;
 } Pixel_YCbCr;
-
-Pixel_YCbCr **convertYCbCr(Pixel **Image, BITMAPINFOHEADER *InfoHeader, Pixel_YCbCr **imgYCbCr)
+typedef struct
 {
-    imgYCbCr = (Pixel_YCbCr **)malloc(InfoHeader->Height * sizeof(Pixel_YCbCr *)); //
+    unsigned char Cb;
+    unsigned char Cr;
+} Chromancy;
+
+Pixel_YCbCr **convertYCbCr(Pixel **Image, BITMAPINFOHEADER *InfoHeader)
+{
+    Pixel_YCbCr **imgYCbCr = (Pixel_YCbCr **)malloc(InfoHeader->Height * sizeof(Pixel_YCbCr *)); //
     for (int i = 0; i < InfoHeader->Height; i++)
         imgYCbCr[i] = (Pixel_YCbCr *)malloc(InfoHeader->Width * sizeof(Pixel_YCbCr));
 
@@ -29,75 +34,60 @@ Pixel_YCbCr **convertYCbCr(Pixel **Image, BITMAPINFOHEADER *InfoHeader, Pixel_YC
     return imgYCbCr;
 }
 
-Pixel **convertBMP(Pixel_YCbCr **imgYCbCr, BITMAPINFOHEADER *InfoHeader, Pixel **Image)
+Pixel **convertBMP(unsigned char **Y, Chromancy **chromancy, BITMAPINFOHEADER *InfoHeader)
 {
+    Pixel **Image_upscaled = (Pixel **)malloc(InfoHeader->Height * sizeof(Pixel *)); //
+    for (int i = 0; i < InfoHeader->Height; i++)
+    {
+        Image_upscaled[i] = (Pixel *)malloc(InfoHeader->Width * sizeof(Pixel));
+    }
+    for (int i = 0; i < InfoHeader->Height; i++)
+    {
+        for (int j = 0; j < InfoHeader->Width; j++)
+        {
+            Image_upscaled[i][j].R = Y[i][j] + 1.402 * (chromancy[i / 2][j / 2].Cr - 128);
+            Image_upscaled[i][j].G = Y[i][j] - 0.344136 * (chromancy[i / 2][j / 2].Cb - 128) - 0.714136 * (chromancy[i / 2][j / 2].Cr - 128);
+            Image_upscaled[i][j].B = Y[i][j] + 1.772 * (chromancy[i / 2][j / 2].Cb - 128);
+        }
+    }
+    return Image_upscaled;
+}
+
+Chromancy **compressCbCr(Pixel_YCbCr **imgYCbCr, BITMAPINFOHEADER *InfoHeader)
+{
+
+    Chromancy **chromancy = (Chromancy **)malloc(InfoHeader->Height * sizeof(Chromancy *)); //
+    for (int i = 0; i < InfoHeader->Height / 2; i++)
+    {
+        chromancy[i] = (Chromancy *)malloc(InfoHeader->Width / 2 * sizeof(Chromancy));
+        chromancy[i] = (Chromancy *)malloc(InfoHeader->Width / 2 * sizeof(Chromancy));
+    }
 
     for (int i = 0; i < InfoHeader->Height; i++)
     {
         for (int j = 0; j < InfoHeader->Width; j++)
         {
-            Image[i][j].R = (unsigned char) (imgYCbCr[i][j].Y + 1.402   * (imgYCbCr[i][j].Cr - 128));
-            Image[i][j].G = (unsigned char) (imgYCbCr[i][j].Y - 0.344136 * (imgYCbCr[i][j].Cb - 128) - 0.714136 * (imgYCbCr[i][j].Cr - 128));
-            Image[i][j].B = (unsigned char) (imgYCbCr[i][j].Y + 1.772   * (imgYCbCr[i][j].Cb - 128));
+            if (i % 2 == 0 && j % 2 == 0)
+            {
+                chromancy[i / 2][j / 2].Cb = (imgYCbCr[i][j].Cb + imgYCbCr[i + 1][j].Cb + imgYCbCr[i][j + 1].Cb + imgYCbCr[i + 1][j + 1].Cb) / 4;
+                chromancy[i / 2][j / 2].Cr = (imgYCbCr[i][j].Cr + imgYCbCr[i + 1][j].Cr + imgYCbCr[i][j + 1].Cr + imgYCbCr[i + 1][j + 1].Cr) / 4;
+            }
         }
     }
-    return Image;
+    return chromancy;
 }
 
-Pixel_YCbCr **compressYCbCr(Pixel_YCbCr **imgYCbCr,Pixel_YCbCr **aux_matrix ,BITMAPINFOHEADER *InfoHeader, int final_amount)
+unsigned char **allocate_memory(BITMAPINFOHEADER InfoHeader)
 {
-
-    aux_matrix = (Pixel_YCbCr **)malloc(InfoHeader->Height * sizeof(Pixel_YCbCr *)); //
-    for (int i = 0; i < InfoHeader->Height; i++)
-        aux_matrix[i] = (Pixel_YCbCr *)malloc(InfoHeader->Width * sizeof(Pixel_YCbCr));
-    printf("-> Compressing image with factor %d%%\n", final_amount);
-    unsigned char Cr_pixel, Cb_pixel;
-    for (int i = 0; i < InfoHeader->Height; i++)
-    {
-        for (int j = 0; j < InfoHeader->Width; j++)
-        {
-            if (i == InfoHeader->Height) // last column
-            {
-                if (j == InfoHeader->Width) // Last pixel
-                {
-                    aux_matrix[i][j].Cb = imgYCbCr[i][j].Cb;
-                    aux_matrix[i][j].Cr = imgYCbCr[i][j].Cr;
-                }
-                else // last column but not last pixel
-                {
-                    aux_matrix[i][j].Cb = (int)(imgYCbCr[i][j].Cb +
-                                                imgYCbCr[i][j + 1].Cb) /
-                                          2;
-                    aux_matrix[i][j].Cr = (int)(imgYCbCr[i][j].Cr +
-                                                imgYCbCr[i][j + 1].Cr) /
-                                          2;
-                }
-            }
-
-            else // last line
-            {
-                if (j == InfoHeader->Width) // last line but not last pixel
-                {
-                    aux_matrix[i][j].Cb = (int)(imgYCbCr[i][j].Cb + imgYCbCr[i + 1][j].Cb) / 2;
-                    aux_matrix[i][j].Cr = (int)(imgYCbCr[i][j].Cr + imgYCbCr[i + 1][j].Cr) / 2;
-                }
-                else // normal pixel
-                {
-                    aux_matrix[i][j].Cb = (int)(imgYCbCr[i][j].Cb + imgYCbCr[i + 1][j].Cb + imgYCbCr[i][j + 1].Cb + imgYCbCr[i + 1][j + 1].Cb) / 4;
-
-                    aux_matrix[i][j].Cr = (int)(imgYCbCr[i][j].Cr + imgYCbCr[i + 1][j].Cr + imgYCbCr[i][j + 1].Cr + imgYCbCr[i + 1][j + 1].Cr) / 4;
-                }
-            }
-            aux_matrix[i][j].Y = imgYCbCr[i][j].Y;
-        }
-    }
-    return aux_matrix;
+    unsigned char **Y = (unsigned char **)malloc(InfoHeader.Height * sizeof(unsigned char *));
+    for (int i = 0; i < InfoHeader.Width; i++)
+        Y[i] = (unsigned char *)malloc(InfoHeader.Width * sizeof(unsigned char));
+    return Y;
 }
+
 int main(int argc, char *argv[])
 {
-    FILE *input, *output;
-    int i;
-    unsigned char *v;
+    FILE *input;
 
     BITMAPFILEHEADER FileHeader; /* File header */
     BITMAPINFOHEADER InfoHeader; /* Info header */
@@ -114,19 +104,22 @@ int main(int argc, char *argv[])
         printf("Usage: %s <source file> <result file>\n", argv[0]);
         exit(1);
     }
+    size_t size_source_name = strlen("./bmp_source/") + strlen(argv[1]) + 1;
+    size_t size_result_name = strlen("./images/") + strlen(argv[2]) + 1;
 
-    char *source_name = (char *)malloc(strlen(argv[1]) + 13 * sizeof(char));
-    char *result_name = (char *)malloc(strlen(argv[1]) + 9 * sizeof(char));
-
+    char *source_name = (char *)malloc(size_source_name * sizeof(char));
+    char *result_name = (char *)malloc(size_result_name * sizeof(char));
+    source_name[0] = '\0';
+    result_name[0] = '\0';
     strcat(source_name, "./bmp_source/");
     strcat(source_name, argv[1]);
-
     strcat(result_name, "./images/");
     strcat(result_name, argv[2]);
 
     printf("-> Image\n\t- Source file: %s\n\n", source_name);
     if (!(input = fopen(source_name, "rb")))
     {
+
         printf("Error: could not open input file.");
         exit(1);
     }
@@ -136,17 +129,19 @@ int main(int argc, char *argv[])
     printHeaders(&FileHeader, &InfoHeader);
 
     // load da imagem para a heap para memória variávels (imagem de tamanho genérico)
-    Pixel **Image;
-    Image = loadBMPImage(input, InfoHeader, Image);
+    Pixel **Image = loadBMPImage(input, &InfoHeader);
 
-    printf("-> Image size: %d x %d\n", InfoHeader.Width, InfoHeader.Height);
+    Pixel_YCbCr **imgYCbCr = convertYCbCr(Image, &InfoHeader);
+    Chromancy **compressed_chromancy = compressCbCr(imgYCbCr, &InfoHeader);
+    unsigned char **Y = allocate_memory(InfoHeader);
 
-    Pixel_YCbCr **imgYCbCr,**compressed_imgYCbCr;
-    imgYCbCr = convertYCbCr(Image, &InfoHeader, imgYCbCr);
-    compressed_imgYCbCr = compressYCbCr(imgYCbCr,compressed_imgYCbCr, &InfoHeader, 75);
-    // Pixel ** compressedBMP;
-    // compressedBMP = convertBMP(compressed_imgYCbCr, &InfoHeader, Image);
-    
-    // exportImage(result_name, &FileHeader, &InfoHeader, Image);
+    for (int i = 0; i < InfoHeader.Height; i++)
+        for (int j = 0; j < InfoHeader.Width; j++)
+            Y[i][j] = imgYCbCr[i][j].Y;
+
+    Pixel **converted_Image = convertBMP(Y, compressed_chromancy, &InfoHeader);
+
+    exportImage(result_name, &FileHeader, &InfoHeader, converted_Image);
+
     return 0;
 }
