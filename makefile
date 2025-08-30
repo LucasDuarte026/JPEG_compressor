@@ -1,13 +1,13 @@
 all:
-	gcc  -o ./bin/main ./src/*.c ./include/*.h 
+	g++  -o ./bin/main ./src/*.c   -Iinclude
 full:
-	gcc -Wall -o ./bin/main ./src/*.c ./include/*.h 
+	g++ -Wall -o ./bin/main ./src/*.c   -Iinclude
 
 
 debug:
-	gcc  -g3 ./src/*.c -o ./bin/main ./src/*.c ./include/*.h 
+	g++  -g3 ./src/*.c  -o ./bin/main ./src/*.c   -Iinclude
 fullDebug :
-	gcc  -Wall -g3 ./src/*.c -o ./bin/main ./src/*.c ./include/*.h 
+	g++  -Wall -g3 ./src/*.c  -o ./bin/main ./src/*.c   -Iinclude
 	
 run:
 	./bin/main

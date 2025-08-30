@@ -1,2 +1,2 @@
 # JPEG algorithm
-## Image compression (.bpm)
+## Image compression (.bmp)
