@@ -3,6 +3,7 @@
 #include <string.h>
 #include "jpeg.h"
 #include "bitmap.h"
+#include "math.h"
 
 typedef struct
 {
@@ -44,10 +45,22 @@ Pixel **convertBMP(unsigned char **Y, Chromancy **chromancy, BITMAPINFOHEADER *I
     for (int i = 0; i < InfoHeader->Height; i++)
     {
         for (int j = 0; j < InfoHeader->Width; j++)
-        {
-            Image_upscaled[i][j].R = Y[i][j] + 1.402 * (chromancy[i / 2][j / 2].Cr - 128);
-            Image_upscaled[i][j].G = Y[i][j] - 0.344136 * (chromancy[i / 2][j / 2].Cb - 128) - 0.714136 * (chromancy[i / 2][j / 2].Cr - 128);
-            Image_upscaled[i][j].B = Y[i][j] + 1.772 * (chromancy[i / 2][j / 2].Cb - 128);
+       {
+            // Converte para double ANTES de fazer as contas
+            double y_val = Y[i][j];
+            double cb_val = chromancy[i / 2][j / 2].Cb;
+            double cr_val = chromancy[i / 2][j / 2].Cr;
+
+            // Calcula os valores temporários em ponto flutuante
+            double r_temp = y_val + 1.402 * (cr_val - 128);
+            double g_temp = y_val - 0.344136 * (cb_val - 128) - 0.714136 * (cr_val - 128);
+            double b_temp = y_val + 1.772 * (cb_val - 128);
+
+            // "Clamping": Garante que o valor final esteja entre 0 e 255
+            // Em C++, use std::max/min. Em C, você pode usar ifs.
+            Image_upscaled[i][j].R = (unsigned char)fmax(0.0, fmin(255.0, r_temp));
+            Image_upscaled[i][j].G = (unsigned char)fmax(0.0, fmin(255.0, g_temp));
+            Image_upscaled[i][j].B = (unsigned char)fmax(0.0, fmin(255.0, b_temp));
         }
     }
     return Image_upscaled;
