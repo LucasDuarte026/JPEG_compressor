@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "bitmap.h"
+#include "image_utils.h"
 
 void loadBMPHeaders(FILE *fp, BITMAPFILEHEADER *FileHeader, BITMAPINFOHEADER *InfoHeader)
 {
@@ -66,12 +66,12 @@ void printHeaders(BITMAPFILEHEADER *FileHeader, BITMAPINFOHEADER *InfoHeader)
     system("pause");
 }
 
-Pixel **loadBMPImage(FILE *input, BITMAPINFOHEADER *InfoHeader)
+Pixel_d **loadBMPImage(FILE *input, BITMAPINFOHEADER *InfoHeader)
 {
-    Pixel ** Image = (Pixel **)malloc(InfoHeader->Height * sizeof(Pixel *)); //
+    Pixel_d **Image = (Pixel_d **)malloc(InfoHeader->Height * sizeof(Pixel_d *)); //
     for (int i = 0; i < InfoHeader->Height; i++)
     {
-        Image[i] = (Pixel *)malloc(InfoHeader->Width * sizeof(Pixel));
+        Image[i] = (Pixel_d *)malloc(InfoHeader->Width * sizeof(Pixel_d));
     }
 
     fseek(input, 54, SEEK_SET); // skipping the header (54 bytes)
@@ -79,15 +79,13 @@ Pixel **loadBMPImage(FILE *input, BITMAPINFOHEADER *InfoHeader)
     {
         for (int j = 0; j < InfoHeader->Width; j++)
         {
-            fread(&Image[i][j].R, sizeof(unsigned char), 1, input);
-            fread(&Image[i][j].G, sizeof(unsigned char), 1, input);
-            fread(&Image[i][j].B, sizeof(unsigned char), 1, input);
+            fread(&Image[i][j].R, sizeof(double), 1, input);
+            fread(&Image[i][j].G, sizeof(double), 1, input);
+            fread(&Image[i][j].B, sizeof(double), 1, input);
         }
     }
     return Image;
 }
-
-
 
 void exportImage(char *output_filename, BITMAPFILEHEADER *FileHeader, BITMAPINFOHEADER *InfoHeader, Pixel **Image)
 {
@@ -129,3 +127,66 @@ void exportImage(char *output_filename, BITMAPFILEHEADER *FileHeader, BITMAPINFO
 
     fclose(file_pointer);
 }
+
+double ***allocate_blocks(int num_blocks)
+{
+    // 1. Aloca a "lista" de ponteiros para as matrizes 8x8 (double**)
+    double ***blocks = (double ***)malloc(num_blocks * sizeof(double **));
+    if (blocks == NULL)
+    {
+        // Falha na alocação
+        return NULL;
+    }
+
+    // 2. Para cada bloco na lista, aloca uma matriz 8x8
+    for (int k = 0; k < num_blocks; k++)
+    {
+        // 2a. Aloca as 8 linhas (ponteiros para double*) para a matriz k
+        blocks[k] = (double **)malloc(BLOCK_SIZE * sizeof(double *));
+        if (blocks[k] == NULL)
+        {
+            // Falha na alocação, precisa liberar o que já foi alocado
+            // (código de limpeza omitido por simplicidade, mas importante em produção)
+            return NULL;
+        }
+
+        // 2b. Para cada linha da matriz k, aloca os 8 elementos (doubles)
+        for (int i = 0; i < BLOCK_SIZE; i++)
+        {
+            blocks[k][i] = (double *)malloc(BLOCK_SIZE * sizeof(double));
+            if (blocks[k][i] == NULL)
+            {
+                // Falha na alocação
+                return NULL;
+            }
+        }
+    }
+
+    return blocks;
+}
+
+void free_blocks(double ***blocks, int num_blocks)
+{
+    if (blocks == NULL)
+        return;
+
+    for (int k = 0; k < num_blocks; k++)
+    {
+        if (blocks[k] != NULL)
+        {
+            for (int i = 0; i < BLOCK_SIZE; i++)
+            {
+                // Libera cada linha da matriz 8x8
+                free(blocks[k][i]);
+            }
+            // Libera a matriz 8x8
+            free(blocks[k]);
+        }
+    }
+    // Libera a lista de matrizes
+    free(blocks);
+}
+
+// void fillblocks(double ***blocks, double **Y, BITMAPINFOHEADER *InfoHeader){
+
+// }

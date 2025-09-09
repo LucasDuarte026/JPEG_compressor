@@ -6,7 +6,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/main",
-            "args": ["colors.bmp","colors_result.bmp"],
+            "args": ["cano.bmp","result_cano.bmp"],
             // "args": ["sea.bmp","sea_result.bmp"],
             // "args": ["bridge.bmp","bridge_result.bmp"],
             "stopAtEntry": false,
