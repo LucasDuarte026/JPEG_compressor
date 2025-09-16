@@ -66,12 +66,12 @@ void printHeaders(BITMAPFILEHEADER *FileHeader, BITMAPINFOHEADER *InfoHeader)
     system("pause");
 }
 
-Pixel_d **loadBMPImage(FILE *input, BITMAPINFOHEADER *InfoHeader)
+Pixel **loadBMPImage(FILE *input, BITMAPINFOHEADER *InfoHeader)
 {
-    Pixel_d **Image = (Pixel_d **)malloc(InfoHeader->Height * sizeof(Pixel_d *)); //
+    Pixel **Image = (Pixel **)malloc(InfoHeader->Height * sizeof(Pixel *)); //
     for (int i = 0; i < InfoHeader->Height; i++)
     {
-        Image[i] = (Pixel_d *)malloc(InfoHeader->Width * sizeof(Pixel_d));
+        Image[i] = (Pixel *)malloc(InfoHeader->Width * sizeof(Pixel));
     }
 
     fseek(input, 54, SEEK_SET); // skipping the header (54 bytes)
@@ -79,9 +79,9 @@ Pixel_d **loadBMPImage(FILE *input, BITMAPINFOHEADER *InfoHeader)
     {
         for (int j = 0; j < InfoHeader->Width; j++)
         {
-            fread(&Image[i][j].R, sizeof(double), 1, input);
-            fread(&Image[i][j].G, sizeof(double), 1, input);
-            fread(&Image[i][j].B, sizeof(double), 1, input);
+            fread(&Image[i][j].R, sizeof(int), 1, input);
+            fread(&Image[i][j].G, sizeof(int), 1, input);
+            fread(&Image[i][j].B, sizeof(int), 1, input);
         }
     }
     return Image;

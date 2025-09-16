@@ -4,7 +4,7 @@
 #include "image_utils.h"
 #include <math.h>
 
-Pixel_YCbCr_d **convertYCbCr(Pixel_d **Image, BITMAPINFOHEADER *InfoHeader)
+Pixel_YCbCr_d **convertYCbCr(Pixel **Image, BITMAPINFOHEADER *InfoHeader)
 {
     Pixel_YCbCr_d **imgYCbCr = (Pixel_YCbCr_d **)malloc(InfoHeader->Height * sizeof(Pixel_YCbCr_d *)); //
     for (int i = 0; i < InfoHeader->Height; i++)
@@ -84,164 +84,54 @@ double **allocate_memory(BITMAPINFOHEADER InfoHeader)
 
 void fillBlocks(double ***blocks, int num_blocks, double **Y, BITMAPINFOHEADER InfoHeader)
 {
-
-    // it fill transposed to optimize cache miss
-    for (int k = 0; k < num_blocks; k++)
-    {
-        for (int i = 0; i < 8; i++)
-        {
-            for (int j = 0; j < 8; j++)
-            {
-                blocks[k][i][j] = Y[i][j];
-            }
-        }
-    }
-}
-
-void applyDCT2(double ***blocks, int num_blocks)
-{
-    /*
-    All the further operation is to provide the DCT transformation:
-
-    B = M * A * M^-1
-    but knowing that M is orthogonal, M^-1 = M^T
-
-    B = M * A * M^T
-
-    where:
-    A is the input block (8x8)
-    M is the DCT matrix (8x8)
-    M^T is the transpose of M (8x8) = M^-1 because M is orthogonal
-
-    To minimize the cache miss and optimize the matrix operation,
-     we alwyas the operarions A * B with A * B^T
-     and the result is the same but the operation
-     is faster because minimize the cache miss when
-     getting the elements of the matrix line by line
-
-
-
-    */
-
-    // init temp matrix
-    double temp[BLOCK_SIZE][BLOCK_SIZE];
-    double temp2[BLOCK_SIZE][BLOCK_SIZE];
+    int num_blocks_per_row = InfoHeader.Width / BLOCK_SIZE;
 
     for (int k = 0; k < num_blocks; k++)
     {
-        // multiply M_dct_t with blocks[k] and store in temp
+        // Calcula a linha e coluna inicial do bloco 'k' na imagem grande
+        int start_row = (k / num_blocks_per_row) * BLOCK_SIZE;
+        int start_col = (k % num_blocks_per_row) * BLOCK_SIZE;
+
+        // Copia o bloco 8x8 da imagem Y para blocks[k]
         for (int i = 0; i < BLOCK_SIZE; i++)
         {
             for (int j = 0; j < BLOCK_SIZE; j++)
             {
-                temp[i][j] = 0; // init the element
-                for (int u = 0; u < BLOCK_SIZE; u++)
-                {
-                    temp[i][j] += M_dct[i][u] * blocks[k][u][j];
-                }
+                // A fonte dos dados vem da posição calculada em Y
+                blocks[k][i][j] = Y[start_row + i][start_col + j];
             }
-            // multiply M_dct_t with blocks[k] and store in temp
-
-            for (int i = 0; i < BLOCK_SIZE; i++)
-            {
-                for (int j = 0; j < BLOCK_SIZE; j++)
-                {
-                    temp2[i][j] = 0; // init the element
-                    for (int u = 0; u < BLOCK_SIZE; u++)
-                    {
-                        temp2[i][j] += temp[i][u] * M_dct[j][u];
-                    }
-                }
-            }
-            for (int i = 0; i < BLOCK_SIZE; i++)
-                for (int j = 0; j < BLOCK_SIZE; j++)
-                    blocks[k][i][j] = temp2[i][j];
         }
     }
 }
 
-void applyDCT_inverse2(double ***blocks, int num_blocks)
+void applyDCT(double ***blocks, int num_blocks)
 {
-    /*
-    All the further operation is to provide the DCT inverse transformation:
-
-    A = M^-1 * B * M
-    but knowing that M is orthogonal, M^-1 = M^T
-
-    A = M * B * M^T
-
-    where:
-    A is the output block of pixel values (8x8)
-    B is the input block of coeficientes (8x8)
-    M is the DCT matrix (8x8)
-    M^T is the transpose of M (8x8) = M^-1 because M is orthogonal
-
-    To minimize the cache miss and optimize the matrix operation,
-     we alwyas the operarions A * B with A * B^T
-     and the result is the same but the operation
-     is faster because minimize the cache miss when
-     getting the elements of the matrix line by line
-
-    */
-
-    // init temp matrix
     double temp[BLOCK_SIZE][BLOCK_SIZE];
     double temp2[BLOCK_SIZE][BLOCK_SIZE];
 
     for (int k = 0; k < num_blocks; k++)
     {
-        // multiply M_dct_t with blocks[k] and store in temp
-        for (int i = 0; i < BLOCK_SIZE; i++)
-        {
-            for (int j = 0; j < BLOCK_SIZE; j++)
-            {
-                temp[i][j] = 0; // init the element
-                for (int u = 0; u < BLOCK_SIZE; u++)
-                {
-                    temp[i][j] += M_dct_t[i][u] * blocks[k][u][j];
-                }
-            }
-            // multiply M_dct_t with blocks[k] and store in temp
-
-            for (int i = 0; i < BLOCK_SIZE; i++)
-            {   
-                for (int j = 0; j < BLOCK_SIZE; j++)
-                {
-                    temp2[i][j] = 0; // init the element
-                    for (int u = 0; u < BLOCK_SIZE; u++)
-                    {
-                        temp2[i][j] += temp[i][u] * M_dct_t[j][u];
-                    }
-                }
-            }
-            for (int i = 0; i < BLOCK_SIZE; i++)
-                for (int j = 0; j < BLOCK_SIZE; j++)
-                    blocks[k][i][j] = temp2[i][j];
-        }
-    }
-}
-
-
-void applyDCT(double ***blocks, int num_blocks) {
-    double temp[BLOCK_SIZE][BLOCK_SIZE];
-    double temp2[BLOCK_SIZE][BLOCK_SIZE];
-
-    for (int k = 0; k < num_blocks; k++) {
         // temp = M * A
-        for (int i = 0; i < BLOCK_SIZE; i++) {
-            for (int j = 0; j < BLOCK_SIZE; j++) {
+        for (int i = 0; i < BLOCK_SIZE; i++)
+        {
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
                 temp[i][j] = 0;
-                for (int u = 0; u < BLOCK_SIZE; u++) {
-                    temp[i][j] += M_dct[i][u] * blocks[k][u][j];
+                for (int u = 0; u < BLOCK_SIZE; u++)
+                {
+                    temp[i][j] += M_dct[i][u] * (blocks[k][u][j]-128);
                 }
             }
         }
         // temp2 = temp * M^T
-        for (int i = 0; i < BLOCK_SIZE; i++) {
-            for (int j = 0; j < BLOCK_SIZE; j++) {
+        for (int i = 0; i < BLOCK_SIZE; i++)
+        {
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
                 temp2[i][j] = 0;
-                for (int u = 0; u < BLOCK_SIZE; u++) {
-                    temp2[i][j] += temp[i][u] * M_dct[j][u];  // M^T
+                for (int u = 0; u < BLOCK_SIZE; u++)
+                {
+                    temp2[i][j] += temp[i][u] * M_dct[j][u]; // M^T
                 }
             }
         }
@@ -252,25 +142,33 @@ void applyDCT(double ***blocks, int num_blocks) {
     }
 }
 
-void applyDCT_inverse(double ***blocks, int num_blocks) {
+void applyDCT_inverse(double ***blocks, int num_blocks)
+{
     double temp[BLOCK_SIZE][BLOCK_SIZE];
     double temp2[BLOCK_SIZE][BLOCK_SIZE];
 
-    for (int k = 0; k < num_blocks; k++) {
+    for (int k = 0; k < num_blocks; k++)
+    {
         // temp = M^T * B
-        for (int i = 0; i < BLOCK_SIZE; i++) {
-            for (int j = 0; j < BLOCK_SIZE; j++) {
+        for (int i = 0; i < BLOCK_SIZE; i++)
+        {
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
                 temp[i][j] = 0;
-                for (int u = 0; u < BLOCK_SIZE; u++) {
+                for (int u = 0; u < BLOCK_SIZE; u++)
+                {
                     temp[i][j] += M_dct_t[i][u] * blocks[k][u][j];
                 }
             }
         }
         // temp2 = temp * M
-        for (int i = 0; i < BLOCK_SIZE; i++) {
-            for (int j = 0; j < BLOCK_SIZE; j++) {
+        for (int i = 0; i < BLOCK_SIZE; i++)
+        {
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
                 temp2[i][j] = 0;
-                for (int u = 0; u < BLOCK_SIZE; u++) {
+                for (int u = 0; u < BLOCK_SIZE; u++)
+                {
                     temp2[i][j] += temp[i][u] * M_dct[u][j];
                 }
             }
@@ -278,7 +176,21 @@ void applyDCT_inverse(double ***blocks, int num_blocks) {
         // Salvar no bloco
         for (int i = 0; i < BLOCK_SIZE; i++)
             for (int j = 0; j < BLOCK_SIZE; j++)
-                blocks[k][i][j] = temp2[i][j];
+                blocks[k][i][j] = (temp2[i][j] +128);
+    }
+}
+
+void applyQuantization(double ***blocks, int num_blocks, const int div_mat[8][8])
+{
+    for (int k = 0; k < num_blocks; k++)
+    {
+        for (int i = 0; i < BLOCK_SIZE; i++)
+        {
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
+                blocks[k][i][j] = blocks[k][i][j] / div_mat[i][j];
+            }
+        }
     }
 }
 
@@ -352,8 +264,7 @@ int main(int argc, char *argv[])
     printf("Number of 8x8 blocks: %d\n", num_blocks);
 
     // load da imagem para a heap para memória variávels (imagem de tamanho genérico)
-    Pixel_d **Image = loadBMPImage(input, &InfoHeader);
-
+    Pixel **Image = loadBMPImage(input, &InfoHeader);
     Pixel_YCbCr_d **imgYCbCr = convertYCbCr(Image, &InfoHeader);
     Chromancy_d **compressed_chromancy = compressCbCr(imgYCbCr, &InfoHeader);
     double **Y = allocate_memory(InfoHeader);
@@ -370,7 +281,7 @@ int main(int argc, char *argv[])
     // preencher os blocks com os valores de Y
     fillBlocks(blocks, num_blocks, Y, InfoHeader);
 
-    // Matriz estática 8x8 do tipo int
+        // Matriz estática 8x8 do tipo int
     double A[BLOCK_SIZE][BLOCK_SIZE] = {
         {52, 55, 61, 66, 70, 61, 64, 73},
         {63, 59, 66, 90, 109, 85, 69, 72},
@@ -382,8 +293,7 @@ int main(int argc, char *argv[])
         {87, 79, 69, 68, 65, 76, 78, 94}};
 
     double C[BLOCK_SIZE][BLOCK_SIZE];
-  
- 
+
     double **A_2 = (double **)malloc(InfoHeader.Height * sizeof(double *));
     for (int i = 0; i < InfoHeader.Width; i++)
     {
@@ -399,43 +309,128 @@ int main(int argc, char *argv[])
     double ***blocks_test = allocate_blocks(BLOCK_SIZE);
     fillBlocks(blocks_test, BLOCK_SIZE, A_2, InfoHeader);
 
-    printf("Matriz Resultante C = A * B: ANTES\n");
-    for (int i = 0; i < BLOCK_SIZE; i++)
     {
-        for (int j = 0; j < BLOCK_SIZE; j++)
+        printf("Matriz Resultante C = A * B: ANTES\n");
+        for (int i = 0; i < BLOCK_SIZE; i++)
         {
-            printf("%8.2f", blocks_test[0][i][j]);
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
+                printf("%8.2f", blocks_test[0][i][j]);
+            }
+            printf("\n");
         }
-        printf("\n");
-    }
-    applyDCT(blocks_test, 8);
+        applyDCT(blocks_test, 8);
 
-    printf("Matriz Resultante C = A * B: DEPOIS\n");
-    for (int i = 0; i < BLOCK_SIZE; i++)
+        printf("Matriz Resultante C = A * B: DEPOIS\n");
+        for (int i = 0; i < BLOCK_SIZE; i++)
+        {
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
+                printf("%8.2f", blocks_test[0][i][j]);
+            }
+            printf("\n");
+        }
+        applyDCT_inverse(blocks_test, 8);
+
+        printf("DCT inversa\n");
+        for (int i = 0; i < BLOCK_SIZE; i++)
+        {
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
+                printf("%8.2f", blocks_test[0][i][j]);
+            }
+            printf("\n");
+        }
+    }
+    
+
+    printf("\n\n\n --------------------- ANTES DCT ---------------------:");
+    for (int k = 0; k < 6; k++)
     {
-        for (int j = 0; j < BLOCK_SIZE; j++)
-        {
-            printf("%8.2f", blocks_test[0][i][j]);
-        }
-        printf("\n");
-    }
-    applyDCT_inverse(blocks_test, 8);
+        /* code */
+        printf("\n\nblock %d\n", k);
 
-    printf("DCT inversa\n");
-    for (int i = 0; i < BLOCK_SIZE; i++)
+        for (int i = 0; i < BLOCK_SIZE; i++)
+        {
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
+                printf("%8.2f", blocks[k][i][j]);
+            }
+            printf("\n");
+        }
+    }
+
+ 
+    printf("\n\n\n --------------------- DCT ---------------------:");
+    for (int k = 0; k < 6; k++)
     {
-        for (int j = 0; j < BLOCK_SIZE; j++)
-        {
-            printf("%8.2f", blocks_test[0][i][j]);
-        }
-        printf("\n");
-    }
-    // applyQuantization(blocks, num_blocks);
+        /* code */
+        printf("\n\nblock %d\n", k);
 
-    free_blocks(blocks, num_blocks);
+        for (int i = 0; i < BLOCK_SIZE; i++)
+        {
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
+                printf("%8.2f", blocks[k][i][j]);
+            }
+            printf("\n");
+        }
+    }
+
+    applyDCT_inverse(blocks, num_blocks);
+    printf("\n\n\n --------------------- DCT INVERSA ---------------------:");
+
+    for (int k = 0; k < 6; k++)
+    {
+        /* code */
+        printf("\n\nblock %d\n", k);
+
+        for (int i = 0; i < BLOCK_SIZE; i++)
+        {
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
+                printf("%8.2f", blocks[k][i][j]);
+            }
+            printf("\n");
+        }
+    }
+    int quality = 50;
+    switch (quality)
+    {
+    case 75:
+        applyQuantization(blocks, num_blocks,LUMINANCE_Q75);
+        break;
+    case 50:
+        applyQuantization(blocks, num_blocks,LUMINANCE_Q50);
+        break;
+    case 25:
+        applyQuantization(blocks, num_blocks,LUMINANCE_Q25);
+        break;
+    default:
+
+        break;
+    }
+    printf("\n\n\n --------------------- DCT quantizado em 75 ---------------------:");
+
+    for (int k = 0; k < 6; k++)
+    {
+        /* code */
+        printf("\n\nblock %d\n", k);
+
+        for (int i = 0; i < BLOCK_SIZE; i++)
+        {
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
+                printf("%8.2f", blocks[k][i][j]);
+            }
+            printf("\n");
+        }
+    }
+
     // Pixel **converted_Image = convertBMP(Y, compressed_chromancy, &InfoHeader);
 
     // exportImage(result_name, &FileHeader, &InfoHeader, converted_Image);
+    free_blocks(blocks, num_blocks);
 
     // fazer todos os fress
     return 0;
