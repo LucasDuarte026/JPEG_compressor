@@ -2,6 +2,7 @@
     "files.associations": {
         "main.h": "c",
         "stdio.h": "c",
-        "bitmap.h": "c"
+        "bitmap.h": "c",
+        "string.h": "c"
     }
 }

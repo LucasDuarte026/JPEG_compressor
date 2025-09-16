@@ -1,3 +1,8 @@
 bmp_source/*
 images/*
 entrada.sh
+testaaa
+testbbb
+transformDCT.c
+TransformDCT_optimized
+TransformDCT_optimized.c
