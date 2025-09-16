@@ -82,6 +82,48 @@ double **allocate_memory(BITMAPINFOHEADER InfoHeader)
     return Y;
 }
 
+void fillBlocks(double ***blocks, int num_blocks, double **Y, BITMAPINFOHEADER InfoHeader)
+{
+    for (int k = 0; k < num_blocks; k++)
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                blocks[k][i][j] = Y[i][j];
+            }
+        }
+    }
+}
+
+void applyDCT(double ***blocks, int num_blocks, int side)
+{
+    // init temp matrix
+    double temp[side][side] ;
+    for (int i = 0; i < side; i++)
+        for (int j = 0; j < side; j++)
+            temp[i][j] = 0;
+
+    for (int k = 0; k < num_blocks; k++)
+    {
+        for (int i = 0; i < side; i++)
+        {
+            for (int j = 0; j < side; j++)
+            {
+                for (int u = 0; u < side; u++)
+                {
+
+                    temp[i][j] += blocks[k][i][u] * dct_matrix_transposed[j][u];
+                }
+            }
+        }
+        for (int i = 0; i < side; i++)
+            for (int j = 0; j < side; j++)
+                blocks[k][i][j]=temp[i][j] ;
+        
+    }
+}
+
 int main(int argc, char *argv[])
 {
     FILE *input;
@@ -99,6 +141,22 @@ int main(int argc, char *argv[])
     {
         printf("Commands Error:\n");
         printf("Usage: %s <source file> <result file>\n", argv[0]);
+        char command[256];
+        snprintf(command, sizeof(command), "ls -1A %s", "./bmp_source");
+
+        printf("--- Images to process: %s ---\n", command);
+
+        // Execute the command using system()
+        int result = system(command);
+
+        // Check if the command executed successfully
+        if (result == -1) {
+            perror("system");
+            return 1;
+        }
+
+        printf("\n After using, save the results in ./images/\n");
+
         exit(1);
     }
     size_t size_source_name = strlen("./") + strlen(argv[1]) + 1;
@@ -150,10 +208,90 @@ int main(int argc, char *argv[])
     }
 
     double ***blocks = allocate_blocks(num_blocks);
-    // fillblocks(blocks, Y, InfoHeader );
     // preencher os blocks com os valores de Y
-    free_blocks(blocks, num_blocks);
+    fillBlocks(blocks, num_blocks, Y, InfoHeader);
 
+
+int SIZE = 8;
+double A[SIZE][SIZE] = {
+    { 1,  2,  3,  4,  5,  6,  7,  8},
+    { 9, 10, 11, 12, 13, 14, 15, 16},
+    {17, 18, 19, 20, 21, 22, 23, 24},
+    {25, 26, 27, 28, 29, 30, 31, 32},
+    {33, 34, 35, 36, 37, 38, 39, 40},
+    {41, 42, 43, 44, 45, 46, 47, 48},
+    {49, 50, 51, 52, 53, 54, 55, 56},
+    {57, 58, 59, 60, 61, 62, 63, 64}
+};
+
+// Matriz B (8x8) preenchida com valores baseados nos índices (i+j)
+double B[SIZE][SIZE] = {
+    {0, 1, 2, 3, 4, 5, 6, 7},
+    {1, 2, 3, 4, 5, 6, 7, 8},
+    {2, 3, 4, 5, 6, 7, 8, 9},
+    {3, 4, 5, 6, 7, 8, 9, 10},
+    {4, 5, 6, 7, 8, 9, 10, 11},
+    {5, 6, 7, 8, 9, 10, 11, 12},
+    {6, 7, 8, 9, 10, 11, 12, 13},
+    {7, 8, 9, 10, 11, 12, 13, 14}
+};
+    
+    double C[SIZE][SIZE];
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            C[i][j] = 0; // Inicializa o elemento
+            for (int k = 0; k < SIZE; k++) {
+                // C[i][j] += A[i][k] * dct_matrix[k][j];
+                C[i][j] += A[i][k] * dct_matrix_transposed[j][k];
+            }
+        }
+    }
+   
+       
+
+    double **A_2 = (double **)malloc(InfoHeader.Height * sizeof(double *));
+    for (int i = 0; i < InfoHeader.Width; i++){
+        A_2[i] = (double *)malloc(InfoHeader.Width * sizeof(double));
+    }
+     for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            A_2[i][j] = A[i][j]; // Inicializa o elemento
+        }
+    }
+    double ***blocks_test = allocate_blocks(SIZE);
+    fillBlocks(blocks_test, SIZE, A_2, InfoHeader);
+
+    // --- Impressão da Matriz Resultante C ---
+    printf("Matriz Resultante C = A * B: ANTES\n");
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            printf("%8.2f", C[i][j]);
+        }
+        printf("\n");
+    }
+    
+    printf("Matriz Resultante C = A * B: DEPOIS\n");
+    applyDCT(blocks_test, SIZE,SIZE);
+
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            printf("%8.2f", blocks_test[0][i][j]);
+        }
+        printf("\n");
+    }
+    // applyQuantization(blocks, num_blocks);
+
+    free_blocks(blocks, num_blocks);
+    double result[SIZE][SIZE] = {
+        {  9.943,  -8.801,   3.757,  -2.939,   1.741,  -1.267,   0.647,  -0.249},
+        { 31.087, -14.569,   8.341,  -4.531,   4.213,  -1.515,   2.079,   0.383},
+        { 52.231, -20.337,  12.925,  -6.123,   6.685,  -1.763,   3.511,   1.015},
+        { 73.375, -26.105,  17.509,  -7.715,   9.157,  -2.011,   4.943,   1.647},
+        { 94.519, -31.873,  22.093,  -9.307,  11.629,  -2.259,   6.375,   2.279},
+        {115.663, -37.641,  26.677, -10.899,  14.101,  -2.507,   7.807,   2.911},
+        {136.807, -43.409,  31.261, -12.491,  16.573,  -2.755,   9.239,   3.543},
+        {157.951, -49.177,  35.845, -14.083,  19.045,  -3.003,  10.671,   4.175}
+    };
     // Pixel **converted_Image = convertBMP(Y, compressed_chromancy, &InfoHeader);
 
     // exportImage(result_name, &FileHeader, &InfoHeader, converted_Image);
