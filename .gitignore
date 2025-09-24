@@ -3,5 +3,6 @@ images/*
 entrada.sh
 transformDCT.c
 TransformDCT_optimized.c
-src/lixo.txt
+src/*.txt
+include/*.txt
     

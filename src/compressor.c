@@ -3,319 +3,101 @@
 #include <string.h>
 #include "image_utils.h"
 
-Pixel_YCbCr_d **convertYCbCr(Pixel **Image, BITMAPINFOHEADER *InfoHeader)
+/**
+ * @brief Função de exemplo que demonstra o ciclo completo de codificação e decodificação.
+ */
+void run_huffman_test()
 {
-    Pixel_YCbCr_d **imgYCbCr = (Pixel_YCbCr_d **)malloc(InfoHeader->Height * sizeof(Pixel_YCbCr_d *)); //
-    for (int i = 0; i < InfoHeader->Height; i++)
-        imgYCbCr[i] = (Pixel_YCbCr_d *)malloc(InfoHeader->Width * sizeof(Pixel_YCbCr_d));
+    printf("--- Iniciando Teste de Huffman ---\n");
 
-    for (int i = 0; i < InfoHeader->Height; i++)
+    // 1. DADOS DE ENTRADA (Exemplo: um bloco após DCT e Quantização)
+    int original_block[BLOCK_SIZE][BLOCK_SIZE] = {
+        {-26, -3, 0, -3, -2, -6, 2, -4},
+        {1, -2, 1, -2, 1, 1, 3, 1},
+        {-1, 1, -1, -1, 0, 2, -4, -2},
+        {-3, 1, 5, -3, -1, -3, 1, 1},
+        {1, -1, 1, 2, 0, 1, -2, -1},
+        {3, -2, -1, -2, 3, 2, -3, -2},
+        {0, -1, 2, 3, 1, -1, 2, 2},
+        {1, -1, -1, -1, 0, -1, -1, 0}};
+    printf("\nBloco Original (Quantizado):\n");
+    for (int i = 0; i < BLOCK_SIZE; i++)
     {
-        for (int j = 0; j < InfoHeader->Width; j++)
-        {
-            imgYCbCr[i][j].Y = (double)(0.299 * Image[i][j].R + 0.587 * Image[i][j].G + 0.114 * Image[i][j].B);
-            imgYCbCr[i][j].Cb = (double)(128 - 0.168736 * Image[i][j].R - 0.331264 * Image[i][j].G + 0.5 * Image[i][j].B);
-            imgYCbCr[i][j].Cr = (double)(128 + 0.5 * Image[i][j].R - 0.418688 * Image[i][j].G - 0.081312 * Image[i][j].B);
-        }
+        for (int j = 0; j < BLOCK_SIZE; j++)
+            printf("%4d ", original_block[i][j]);
+        printf("\n");
     }
-    return imgYCbCr;
-}
 
-Pixel **convertBMP(unsigned char **Y, Chromancy **chromancy, BITMAPINFOHEADER *InfoHeader)
-{
-    Pixel **Image_upscaled = (Pixel **)malloc(InfoHeader->Height * sizeof(Pixel *)); //
-    for (int i = 0; i < InfoHeader->Height; i++)
+    // 2. CODIFICAÇÃO HUFFMAN
+    const char *filename = "test_huffman.bin";
+    FILE *fp = fopen(filename, "wb");
+    if (!fp)
     {
-        Image_upscaled[i] = (Pixel *)malloc(InfoHeader->Width * sizeof(Pixel));
+        perror("Erro ao abrir arquivo para escrita");
+        return;
     }
-    for (int i = 0; i < InfoHeader->Height; i++)
+
+    BitstreamWriter writer;
+    bitstream_writer_init(&writer, fp);
+
+    int prev_dc = 0; // Para o primeiro bloco, o DC anterior é 0
+    encode_block(original_block, &prev_dc, &g_luma_huff_tables, &writer);
+
+    bitstream_writer_flush(&writer);
+    fclose(fp);
+    printf("\nBloco codificado e salvo em '%s'.\n", filename);
+    printf("Valor DC final: %d\n", prev_dc);
+
+    // 3. DECODIFICAÇÃO HUFFMAN
+    fp = fopen(filename, "rb");
+    if (!fp)
     {
-        for (int j = 0; j < InfoHeader->Width; j++)
-        {
-            // Converte para double ANTES de fazer as contas
-            double y_val = Y[i][j];
-            double cb_val = chromancy[i / 2][j / 2].Cb;
-            double cr_val = chromancy[i / 2][j / 2].Cr;
-
-            // Calcula os valores temporários em ponto flutuante
-            double r_temp = y_val + 1.402 * (cr_val - 128);
-            double g_temp = y_val - 0.344136 * (cb_val - 128) - 0.714136 * (cr_val - 128);
-            double b_temp = y_val + 1.772 * (cb_val - 128);
-
-            // "Clamping": Garante que o valor final esteja entre 0 e 255
-            // Em C++, use std::max/min. Em C, você pode usar ifs.
-            Image_upscaled[i][j].R = (unsigned char)fmax(0.0, fmin(255.0, r_temp));
-            Image_upscaled[i][j].G = (unsigned char)fmax(0.0, fmin(255.0, g_temp));
-            Image_upscaled[i][j].B = (unsigned char)fmax(0.0, fmin(255.0, b_temp));
-        }
+        perror("Erro ao abrir arquivo para leitura");
+        return;
     }
-    return Image_upscaled;
-}
 
-Chromancy **compressCbCr(Pixel_YCbCr_d **imgYCbCr, BITMAPINFOHEADER *InfoHeader)
-{
+    BitstreamReader reader;
+    bitstream_reader_init(&reader, fp);
 
-    Chromancy **chromancy = (Chromancy **)malloc(InfoHeader->Height * 0.5 * sizeof(Chromancy *)); //
-    for (int i = 0; i < InfoHeader->Height / 2; i++)
-        chromancy[i] = (Chromancy *)malloc(InfoHeader->Width * 0.5 * sizeof(Chromancy));
+    int decoded_block[BLOCK_SIZE][BLOCK_SIZE];
+    int prev_dc_dec = 0; // Reseta o DC para a decodificação
+    decode_block(decoded_block, &prev_dc_dec, &g_luma_huff_tables, &reader);
+    fclose(fp);
 
-    for (int i = 0; i < InfoHeader->Height; i++)
+    printf("\nBloco Decodificado:\n");
+    for (int i = 0; i < BLOCK_SIZE; i++)
     {
-        for (int j = 0; j < InfoHeader->Width; j++)
-        {
-            if (i % 2 == 0 && j % 2 == 0)
-            {
-                chromancy[i / 2][j / 2].Cb = (imgYCbCr[i][j].Cb + imgYCbCr[i + 1][j].Cb + imgYCbCr[i][j + 1].Cb + imgYCbCr[i + 1][j + 1].Cb) / 4;
-                chromancy[i / 2][j / 2].Cr = (imgYCbCr[i][j].Cr + imgYCbCr[i + 1][j].Cr + imgYCbCr[i][j + 1].Cr + imgYCbCr[i + 1][j + 1].Cr) / 4;
-            }
-        }
+        for (int j = 0; j < BLOCK_SIZE; j++)
+            printf("%4d ", decoded_block[i][j]);
+        printf("\n");
     }
-    return chromancy;
-}
+    printf("Valor DC decodificado: %d\n", prev_dc_dec);
 
-double **allocate_memory(BITMAPINFOHEADER InfoHeader)
-{
-    double **Y = (double **)malloc(InfoHeader.Height * sizeof(double *));
-    for (int i = 0; i < InfoHeader.Height; i++)
-        Y[i] = (double *)malloc(InfoHeader.Width * sizeof(double));
-    return Y;
-}
-
-void fillBlocks_Y(double ***blocks, int num_blocks, double **Y, BITMAPINFOHEADER InfoHeader)
-{
-    int num_blocks_per_row = InfoHeader.Width / BLOCK_SIZE;
-
-    for (int k = 0; k < num_blocks; k++)
+    // 4. VERIFICAÇÃO
+    int match = 1;
+    for (int i = 0; i < BLOCK_SIZE; i++)
     {
-        // Calcula a linha e coluna inicial do bloco 'k' na imagem grande
-        int start_row = (k / num_blocks_per_row) * BLOCK_SIZE;
-        int start_col = (k % num_blocks_per_row) * BLOCK_SIZE;
-
-        // Copia o bloco 8x8 da imagem Y para blocks[k]
-        for (int i = 0; i < BLOCK_SIZE; i++)
+        for (int j = 0; j < BLOCK_SIZE; j++)
         {
-            for (int j = 0; j < BLOCK_SIZE; j++)
+            if (original_block[i][j] != decoded_block[i][j])
             {
-                // A fonte dos dados vem da posição calculada em Y
-                blocks[k][i][j] = Y[start_row + i][start_col + j];
+                match = 0;
+                break;
             }
         }
+        if (!match)
+            break;
     }
-}
 
-void fillBlocks_chr(Chromancy ***blocks, int num_blocks, Chromancy **Chromancy, BITMAPINFOHEADER InfoHeader)
-{
-    int num_blocks_per_row = InfoHeader.Width / BLOCK_SIZE;
-
-    for (int k = 0; k < num_blocks; k++)
+    if (match)
     {
-        // Calcula a linha e coluna inicial do bloco 'k' na imagem grande
-        int start_row = (k / num_blocks_per_row) * BLOCK_SIZE;
-        int start_col = (k % num_blocks_per_row) * BLOCK_SIZE;
-
-        // Copia o bloco 8x8 da imagem Y para blocks[k]
-        for (int i = 0; i < BLOCK_SIZE; i++)
-        {
-            for (int j = 0; j < BLOCK_SIZE; j++)
-            {
-                // A fonte dos dados vem da posição calculada em Y
-                blocks[k][i][j].Cb = Chromancy[start_row + i][start_col + j].Cb;
-                blocks[k][i][j].Cr = Chromancy[start_row + i][start_col + j].Cr;
-            }
-        }
+        printf("\nSUCESSO: O bloco decodificado é idêntico ao original.\n");
     }
-}
-
-void applyDCT_Y(double ***blocks, int num_blocks)
-{
-    double temp[BLOCK_SIZE][BLOCK_SIZE];
-    double temp2[BLOCK_SIZE][BLOCK_SIZE];
-
-    for (int k = 0; k < num_blocks; k++)
+    else
     {
-        // temp = M * A
-        for (int i = 0; i < BLOCK_SIZE; i++)
-        {
-            for (int j = 0; j < BLOCK_SIZE; j++)
-            {
-                temp[i][j] = 0;
-                for (int u = 0; u < BLOCK_SIZE; u++)
-                {
-                    temp[i][j] += M_dct[i][u] * (blocks[k][u][j] - 128);
-                }
-            }
-        }
-        // temp2 = temp * M^T
-        for (int i = 0; i < BLOCK_SIZE; i++)
-        {
-            for (int j = 0; j < BLOCK_SIZE; j++)
-            {
-                temp2[i][j] = 0;
-                for (int u = 0; u < BLOCK_SIZE; u++)
-                {
-                    temp2[i][j] += temp[i][u] * M_dct[j][u]; // M^T
-                }
-            }
-        }
-        // Salvar no bloco
-        for (int i = 0; i < BLOCK_SIZE; i++)
-            for (int j = 0; j < BLOCK_SIZE; j++)
-                blocks[k][i][j] = temp2[i][j];
+        printf("\nFALHA: O bloco decodificado é diferente do original.\n");
     }
-}
-
-void applyDCT_chr(Chromancy ***blocks, int num_blocks)
-{
-    Chromancy temp[BLOCK_SIZE][BLOCK_SIZE];
-    Chromancy temp2[BLOCK_SIZE][BLOCK_SIZE];
-
-    for (int k = 0; k < num_blocks; k++)
-    {
-        // temp = M * A
-        for (int i = 0; i < BLOCK_SIZE; i++)
-        {
-            for (int j = 0; j < BLOCK_SIZE; j++)
-            {
-                temp[i][j].Cb = 0;
-                temp[i][j].Cr = 0;
-                for (int u = 0; u < BLOCK_SIZE; u++)
-                {
-                    temp[i][j].Cb += M_dct[i][u] * (blocks[k][u][j].Cb - 128);
-                    temp[i][j].Cr += M_dct[i][u] * (blocks[k][u][j].Cr - 128);
-                }
-            }
-        }
-        // temp2 = temp * M^T
-        for (int i = 0; i < BLOCK_SIZE; i++)
-        {
-            for (int j = 0; j < BLOCK_SIZE; j++)
-            {
-                temp2[i][j].Cb = 0;
-                temp2[i][j].Cr = 0;
-                for (int u = 0; u < BLOCK_SIZE; u++)
-                {
-                    temp2[i][j].Cb += temp[i][u].Cb * M_dct[j][u]; // M^T
-                    temp2[i][j].Cr += temp[i][u].Cr * M_dct[j][u]; // M^T
-                }
-            }
-        }
-        // Salvar no bloco
-        for (int i = 0; i < BLOCK_SIZE; i++)
-            for (int j = 0; j < BLOCK_SIZE; j++)
-                blocks[k][i][j] = temp2[i][j];
-    }
-}
-
-void applyDCT_inverse_Y(double ***blocks, int num_blocks)
-{
-    double temp[BLOCK_SIZE][BLOCK_SIZE];
-    double temp2[BLOCK_SIZE][BLOCK_SIZE];
-
-    for (int k = 0; k < num_blocks; k++)
-    {
-        // temp = M^T * B
-        for (int i = 0; i < BLOCK_SIZE; i++)
-        {
-            for (int j = 0; j < BLOCK_SIZE; j++)
-            {
-                temp[i][j] = 0;
-                for (int u = 0; u < BLOCK_SIZE; u++)
-                {
-                    temp[i][j] += M_dct_t[i][u] * blocks[k][u][j];
-                }
-            }
-        }
-        // temp2 = temp * M
-        for (int i = 0; i < BLOCK_SIZE; i++)
-        {
-            for (int j = 0; j < BLOCK_SIZE; j++)
-            {
-                temp2[i][j] = 0;
-                for (int u = 0; u < BLOCK_SIZE; u++)
-                {
-                    temp2[i][j] += temp[i][u] * M_dct[u][j];
-                }
-            }
-        }
-        // Salvar no bloco
-        for (int i = 0; i < BLOCK_SIZE; i++)
-            for (int j = 0; j < BLOCK_SIZE; j++)
-                blocks[k][i][j] = (temp2[i][j] + 128);
-    }
-}
-
-void applyDCT_inverse_chr(Chromancy ***blocks, int num_blocks)
-{
-    Chromancy temp[BLOCK_SIZE][BLOCK_SIZE];
-    Chromancy temp2[BLOCK_SIZE][BLOCK_SIZE];
-
-    for (int k = 0; k < num_blocks; k++)
-    {
-        // temp = M^T * B
-        for (int i = 0; i < BLOCK_SIZE; i++)
-        {
-            for (int j = 0; j < BLOCK_SIZE; j++)
-            {
-                temp[i][j].Cb = 0;
-                temp[i][j].Cr = 0;
-                for (int u = 0; u < BLOCK_SIZE; u++)
-                {
-                    temp[i][j].Cb += M_dct_t[i][u] * blocks[k][u][j].Cb;
-                    temp[i][j].Cr += M_dct_t[i][u] * blocks[k][u][j].Cr;
-                }
-            }
-        }
-        // temp2 = temp * M
-        for (int i = 0; i < BLOCK_SIZE; i++)
-        {
-            for (int j = 0; j < BLOCK_SIZE; j++)
-            {
-                temp2[i][j].Cb = 0;
-                temp2[i][j].Cr = 0;
-                for (int u = 0; u < BLOCK_SIZE; u++)
-                {
-                    temp2[i][j].Cb += temp[i][u].Cb * M_dct[u][j];
-                    temp2[i][j].Cr += temp[i][u].Cr * M_dct[u][j];
-                }
-            }
-        }
-        // Salvar no bloco
-        for (int i = 0; i < BLOCK_SIZE; i++)
-            for (int j = 0; j < BLOCK_SIZE; j++)
-            {
-                blocks[k][i][j].Cb = (temp2[i][j].Cb + 128);
-                blocks[k][i][j].Cr = (temp2[i][j].Cr + 128);
-            }
-    }
-}
-
-void applyQuantization_Y(double ***blocks, int num_blocks, const int div_mat[8][8])
-{
-    for (int k = 0; k < num_blocks; k++)
-    {
-        for (int i = 0; i < BLOCK_SIZE; i++)
-        {
-            for (int j = 0; j < BLOCK_SIZE; j++)
-            {
-                blocks[k][i][j] = blocks[k][i][j] / div_mat[i][j];
-            }
-        }
-    }
-}
-
-void applyQuantization_chr(Chromancy ***blocks, int num_blocks, const int div_mat[8][8])
-{
-    for (int k = 0; k < num_blocks; k++)
-    {
-        for (int i = 0; i < BLOCK_SIZE; i++)
-        {
-            for (int j = 0; j < BLOCK_SIZE; j++)
-            {
-                blocks[k][i][j].Cb = blocks[k][i][j].Cb / div_mat[i][j];
-                blocks[k][i][j].Cr = blocks[k][i][j].Cr / div_mat[i][j];
-            }
-        }
-    }
+    printf("--- Fim do Teste de Huffman ---\n");
 }
 
 int main(int argc, char *argv[])
@@ -418,7 +200,7 @@ int main(int argc, char *argv[])
     fillBlocks_Y(blocks_y, num_blocks, Y, InfoHeader);
     fillBlocks_chr(blocks_chr, num_blocks_chr, compressed_chromancy, InfoHeader);
 
-    /* printf("\n\n\n --------------------- ANTES DCT ---------------------:");
+    /printf("\n\n\n --------------------- ANTES DCT ---------------------:");
         for (int k = 0; k < 2; k++)
         {
              printf("\n\nblock %d\n", k);
@@ -432,11 +214,11 @@ int main(int argc, char *argv[])
                 printf("\n");
             }
         }
-    */
-    applyDCT_Y(blocks_y, num_blocks);
-    applyDCT_chr(blocks_chr, num_blocks_chr);
+    
+    // applyDCT_Y(blocks_y, num_blocks);
+    // applyDCT_chr(blocks_chr, num_blocks_chr);
 
-    /* printf("\n\n\n ---------------------     DCT    ---------------------:");
+     printf("\n\n\n ---------------------     DCT    ---------------------:");
         for (int k = 0; k < 2; k++)
         {
              printf("\n\nblock %d\n", k);
@@ -450,11 +232,11 @@ int main(int argc, char *argv[])
                 printf("\n");
             }
         }
-    */
-    applyDCT_inverse_Y(blocks_y, num_blocks);
-    applyDCT_inverse_chr(blocks_chr, num_blocks_chr);
+    
+    // applyDCT_inverse_Y(blocks_y, num_blocks);
+    // applyDCT_inverse_chr(blocks_chr, num_blocks_chr);
 
-    /* printf("\n\n\n --------------------- DCT INVERSA ---------------------:");
+    printf("\n\n\n --------------------- DCT INVERSA ---------------------:");
         for (int k = 0; k < 2; k++)
         {
              printf("\n\nblock %d\n", k);
@@ -468,8 +250,8 @@ int main(int argc, char *argv[])
                 printf("\n");
             }
         }
-    */
-
+    
+    /*
     switch (quality)
     {
     case 75:
@@ -490,8 +272,9 @@ int main(int argc, char *argv[])
     default:
         break;
     }
+    */
 
-    /* printf("\n\n\n --------------------- DCT quantizado em %d ---------------------:", quality);
+    printf("\n\n\n --------------------- DCT quantizado em %d ---------------------:", quality);
     for (int k = 0; k < 6; k++)
     {
 
@@ -506,55 +289,107 @@ int main(int argc, char *argv[])
             printf("\n");
         }
     }
-    */
 
-    FILE *output_file = fopen("output.bin", "wb");
-    if (!output_file)
+
+    // -- -- -- -- -- encode test -- -- -- --
+
+    int EXAMPLE[BLOCK_SIZE][BLOCK_SIZE] = {
+        {-26, -3, 0, -3, -2, -6, 2, -4},
+        {1, -2, 1, -2, 1, 1, 3, 1},
+        {-1, 1, -1, -1, 0, 2, -4, -2},
+        {-3, 1, 5, -3, -1, -3, 1, 1},
+        {1, -1, 1, 2, 0, 1, -2, -1},
+        {3, -2, -1, -2, 3, 2, -3, -2},
+        {0, -1, 2, 3, 1, -1, 2, 2},
+        {1, -1, -1, -1, 0, -1, -1, 0}};
+
+
+    printf("\n--- Bloco original (pixels) ---\n");
+    for (int i = 0; i < BLOCK_SIZE; i++)
     {
-        perror("It wasn't able to open the file!");
-        return 1;
+        for (int j = 0; j < BLOCK_SIZE; j++)
+        {
+            printf("%4.1f ", blocks_y[0][i][j]);
+        }
+        printf("\n");
     }
-    Bitstream stream;
-    bitstream_init(&stream, output_file);
 
-    int prev_dc_y = 0;
-    int prev_dc_cb = 0;
-    int prev_dc_cr = 0;
-    for (int k = 0; k < num_blocks; k++)
+    // applyDCT_Y(blocks_y, 1);
+
+
+
+    // 2. CODIFICAÇÃO HUFFMAN
+    const char *filename = "test_huffman.bin";
+    FILE *fp = fopen(filename, "wb");
+    if (!fp)
     {
-        /* code */
+        perror("Erro ao abrir arquivo para escrita");
+        return -1;
     }
 
-  
-    printf("Codificando blocos Y...\n");
-    for (int k = 0; k < num_blocks; k++) {
-        // 1. Crie um bloco temporário com o tipo correto (8x8 contíguo)
-        double temp_block[BLOCK_SIZE][BLOCK_SIZE];
+    BitstreamWriter writer;
+    bitstream_writer_init(&writer, fp);
 
-        // 2. Copie os dados do seu bloco double** para o bloco temporário
-        for (int i = 0; i < BLOCK_SIZE; i++) {
-            for (int j = 0; j < BLOCK_SIZE; j++) {
-                temp_block[i][j] = blocks_y[k][i][j];
+    int prev_dc = 0; // Para o primeiro bloco, o DC anterior é 0
+    encode_block(blocks_y[0], &prev_dc, &g_luma_huff_tables, &writer);
+
+    bitstream_writer_flush(&writer);
+    fclose(fp);
+
+    printf("\nBloco codificado e salvo em '%s'.\n", filename);
+    printf("Valor DC final: %d\n", prev_dc);
+
+    // 3. DECODIFICAÇÃO HUFFMAN
+    fp = fopen(filename, "rb");
+    if (!fp)
+    {
+        perror("Erro ao abrir arquivo para leitura");
+        return -1;
+    }
+
+    BitstreamReader reader;
+    bitstream_reader_init(&reader, fp);
+
+    int decoded_block[BLOCK_SIZE][BLOCK_SIZE];
+    int prev_dc_dec = 0; // Reseta o DC para a decodificação
+    decode_block(decoded_block, &prev_dc_dec, &g_luma_huff_tables, &reader);
+    fclose(fp);
+
+    printf("\nBloco Decodificado:\n");
+    for (int i = 0; i < BLOCK_SIZE; i++)
+    {
+        for (int j = 0; j < BLOCK_SIZE; j++)
+            printf("%4d ", decoded_block[i][j]);
+        printf("\n");
+    }
+    printf("Valor DC decodificado: %d\n", prev_dc_dec);
+
+    // 4. VERIFICAÇÃO
+    int match = 1;
+    for (int i = 0; i < BLOCK_SIZE; i++)
+    {
+        for (int j = 0; j < BLOCK_SIZE; j++)
+        {
+            if (EXAMPLE[i][j] != decoded_block[i][j])
+            {
+                match = 0;
+                break;
             }
         }
-
-        // 3. Chame a função com o bloco temporário, que agora tem o tipo certo
-        encode_block(temp_block, &prev_dc_y, g_huff_dc_luma, g_huff_ac_luma, &stream);
+        if (!match)
+            break;
     }
-    // printf("Codificando bloco Cb...\n");
-    // encode_block(block_cb, &prev_dc_cb, g_huff_dc_chroma, g_huff_ac_chroma, &stream);
 
-    // printf("Codificando bloco Cr...\n");
-    // encode_block(block_cr, &prev_dc_cr, g_huff_dc_chroma, g_huff_ac_chroma, &stream);
+    if (match)
+    {
+        printf("\nSUCESSO: O bloco decodificado é idêntico ao original.\n");
+    }
+    else
+    {
+        printf("\nFALHA: O bloco decodificado é diferente do original.\n");
+    }
+    printf("--- Fim do Teste de Huffman ---\n");
 
-    bitstream_flush(&stream);
-    fclose(output_file);
-
-    printf("Arquivo binário 'output.bin' gerado com sucesso!\n");
-
-    // Pixel **converted_Image = convertBMP(Y, compressed_chromancy, &InfoHeader);
-
-    // exportImage(result_name, &FileHeader, &InfoHeader, converted_Image);
     free_blocks_Y(blocks_y, num_blocks);
     free_blocks_chr(blocks_chr, num_blocks_chr);
 

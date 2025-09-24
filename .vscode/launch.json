@@ -6,7 +6,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/main",
-            "args": ["50","bmp_source/sorvete.bmp","images/sorvete_test.bmp"],
+            "args": ["75","bmp_source/cano.bmp","images/cano_test.bmp"],
             // "args": ["sea.bmp","sea_result.bmp"],
             // "args": ["bridge.bmp","bridge_result.bmp"],
             "stopAtEntry": false,
