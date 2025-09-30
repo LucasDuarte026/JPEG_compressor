@@ -84,6 +84,10 @@ typedef struct
 // --- Matrizes de Quantização ---
 extern const int LUMINANCE_Q50[8][8];
 extern const int CHROMINANCE_Q50[8][8];
+extern const int LUMINANCE_Q75[8][8];
+extern const int CHROMINANCE_Q75[8][8];
+extern const int LUMINANCE_Q25[8][8];
+extern const int CHROMINANCE_Q25[8][8];
 
 // --- Matrizes DCT ---
 extern const double M_dct[8][8];
@@ -120,7 +124,8 @@ void leituraHeader(FILE *F, BITMAPFILEHEADER *H);
 void loadBMPHeaders(FILE *fp, BITMAPFILEHEADER *FileHeader, BITMAPINFOHEADER *InfoHeader);
 void printHeaders(BITMAPFILEHEADER *FileHeader, BITMAPINFOHEADER *InfoHeader);
 void exportImage(char *output_filename, BITMAPFILEHEADER *FileHeader, BITMAPINFOHEADER *InfoHeader, Pixel **Image);
-Pixel **loadBMPImage(FILE *input, BITMAPINFOHEADER *InfoHeader);
+Pixel **loadBMPImage(FILE *input, BITMAPFILEHEADER *FileHeader, BITMAPINFOHEADER *InfoHeader);
+Pixel **convertBMP(unsigned char **Y, Chromancy **chromancy, BITMAPINFOHEADER *InfoHeader);
 
 // --- Funções de Alocação de Memória ---
 double **allocate_memory(BITMAPINFOHEADER InfoHeader);
@@ -129,6 +134,8 @@ Chromancy ***allocate_blocks_chr(int num_blocks_chr);
 void        free_blocks_Y(double ***blocks, int num_blocks);
 void        free_blocks_chr(Chromancy ***blocks, int num_blocks);
 void        freeImage(double ***matrix, int height, int width);
+unsigned char **allocate_y_u8(BITMAPINFOHEADER InfoHeader);
+void mergeBlocks_Y(double ***blocks, int num_blocks, unsigned char **Y_out, BITMAPINFOHEADER InfoHeader);
 
 
 // --- Funções de Manipulação de Blocos ---
@@ -143,6 +150,9 @@ void encode_block(int block[BLOCK_SIZE][BLOCK_SIZE], int* prev_dc, HuffmanTable*
 void bitstream_reader_init(BitstreamReader* reader, FILE* f);
 void decode_block(int block[BLOCK_SIZE][BLOCK_SIZE], int* prev_dc, HuffmanTable* huff_tables, BitstreamReader* reader);
 
+// Initializes global JPEG Huffman tables (Annex K canonical tables)
+void init_jpeg_huffman_tables(void);
+
 
 // Ycbcr conversion and chroma compression
 Pixel_YCbCr_d **convertYCbCr(Pixel **Image, BITMAPINFOHEADER *InfoHeader);
@@ -150,9 +160,13 @@ Chromancy **compressCbCr(Pixel_YCbCr_d **imgYCbCr, BITMAPINFOHEADER *InfoHeader)
 
 // DCT and Quantization
 void applyDCT_Y(double ***blocks, int num_blocks);
+void applyDCT_inverse_Y(double ***blocks, int num_blocks);
 void applyQuantization_Y(double ***blocks, int num_blocks, const int q_table[8][8]);
-void applyDCT_Y(double ***blocks, int num_blocks);
-void applyQuantization_Y(double ***blocks, int num_blocks, const int q_table[8][8]);
+void applyDCT_chr(Chromancy ***blocks, int num_blocks);
+void applyDCT_inverse_chr(Chromancy ***blocks, int num_blocks);
+void applyQuantization_chr(Chromancy ***blocks, int num_blocks, const int q_table[8][8]);
+void applyDequantization_Y(double ***blocks, int num_blocks, const int q_table[8][8]);
+void applyDequantization_chr(Chromancy ***blocks, int num_blocks, const int q_table[8][8]);
 
 
 #endif

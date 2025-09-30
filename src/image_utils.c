@@ -179,6 +179,72 @@ HuffmanCode g_huff_ac_chroma_table[256] = {
 HuffmanTable g_luma_huff_tables = {g_huff_dc_luma_table, g_huff_ac_luma_table};
 HuffmanTable g_chroma_huff_tables = {g_huff_dc_chroma_table, g_huff_ac_chroma_table};
 
+// --- Canonical JPEG tables (Annex K) and builder ---
+static const uint8_t STD_LUMA_DC_BITS[16]   = {0x00,0x01,0x05,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x00,0x00,0x00,0x00,0x00};
+static const uint8_t STD_LUMA_DC_VALS[12]   = {0,1,2,3,4,5,6,7,8,9,10,11};
+static const uint8_t STD_CHROMA_DC_BITS[16] = {0x00,0x03,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x00,0x00,0x00,0x00,0x00};
+static const uint8_t STD_CHROMA_DC_VALS[12] = {0,1,2,3,4,5,6,7,8,9,10,11};
+
+static const uint8_t STD_LUMA_AC_BITS[16]   = {0x00,0x02,0x01,0x03,0x03,0x02,0x04,0x03,0x05,0x05,0x04,0x04,0x00,0x00,0x01,0x7D};
+static const uint8_t STD_LUMA_AC_VALS[162]  = {
+    0x01,0x02,0x03,0x00,0x04,0x11,0x05,0x12,0x21,0x31,0x41,0x06,0x13,0x51,0x61,0x07,
+    0x22,0x71,0x14,0x32,0x81,0x91,0xA1,0x08,0x23,0x42,0xB1,0xC1,0x15,0x52,0xD1,0xF0,
+    0x24,0x33,0x62,0x72,0x82,0x09,0x0A,0x16,0x17,0x18,0x19,0x1A,0x25,0x26,0x27,0x28,
+    0x29,0x2A,0x34,0x35,0x36,0x37,0x38,0x39,0x3A,0x43,0x44,0x45,0x46,0x47,0x48,0x49,
+    0x4A,0x53,0x54,0x55,0x56,0x57,0x58,0x59,0x5A,0x63,0x64,0x65,0x66,0x67,0x68,0x69,
+    0x6A,0x73,0x74,0x75,0x76,0x77,0x78,0x79,0x7A,0x83,0x84,0x85,0x86,0x87,0x88,0x89,
+    0x8A,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A,0xA2,0xA3,0xA4,0xA5,0xA6,0xA7,
+    0xA8,0xA9,0xAA,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xC2,0xC3,0xC4,0xC5,
+    0xC6,0xC7,0xC8,0xC9,0xCA,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xE1,0xE2,
+    0xE3,0xE4,0xE5,0xE6,0xE7,0xE8,0xE9,0xEA,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,
+    0xF9,0xFA
+};
+
+static const uint8_t STD_CHROMA_AC_BITS[16] = {0x00,0x02,0x01,0x02,0x04,0x04,0x03,0x04,0x07,0x05,0x04,0x04,0x00,0x01,0x02,0x77};
+static const uint8_t STD_CHROMA_AC_VALS[162] = {
+    0x00,0x01,0x02,0x03,0x11,0x04,0x05,0x21,0x31,0x06,0x12,0x41,0x51,0x07,0x61,0x71,
+    0x13,0x22,0x32,0x81,0x08,0x14,0x42,0x91,0xA1,0xB1,0xC1,0x09,0x23,0x33,0x52,0xF0,
+    0x15,0x62,0x72,0xD1,0x0A,0x16,0x24,0x34,0xE1,0x25,0xF1,0x17,0x18,0x19,0x1A,0x26,
+    0x27,0x28,0x29,0x2A,0x35,0x36,0x37,0x38,0x39,0x3A,0x43,0x44,0x45,0x46,0x47,0x48,
+    0x49,0x4A,0x53,0x54,0x55,0x56,0x57,0x58,0x59,0x5A,0x63,0x64,0x65,0x66,0x67,0x68,
+    0x69,0x6A,0x73,0x74,0x75,0x76,0x77,0x78,0x79,0x7A,0x82,0x83,0x84,0x85,0x86,0x87,
+    0x88,0x89,0x8A,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A,0xA2,0xA3,0xA4,0xA5,
+    0xA6,0xA7,0xA8,0xA9,0xAA,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xC2,0xC3,
+    0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,
+    0xE2,0xE3,0xE4,0xE5,0xE6,0xE7,0xE8,0xE9,0xEA,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,
+    0xF9,0xFA
+};
+
+static void build_canonical_table(const uint8_t bits[16], const uint8_t *huffval, int num_vals, HuffmanCode out_table[], int out_table_size)
+{
+    for (int i = 0; i < out_table_size; i++)
+    {
+        out_table[i].code = 0;
+        out_table[i].length = 0;
+    }
+    unsigned int code = 0;
+    int k = 0;
+    for (int i = 0; i < 16; i++)
+    {
+        for (int j = 0; j < bits[i]; j++)
+        {
+            if (k >= num_vals) return;
+            uint8_t symbol = huffval[k++];
+            out_table[symbol].code = code;
+            out_table[symbol].length = i + 1;
+            code++;
+        }
+        code <<= 1;
+    }
+}
+
+void init_jpeg_huffman_tables(void)
+{
+    build_canonical_table(STD_LUMA_DC_BITS,   STD_LUMA_DC_VALS,   12,  g_huff_dc_luma_table,   12);
+    build_canonical_table(STD_CHROMA_DC_BITS, STD_CHROMA_DC_VALS, 12,  g_huff_dc_chroma_table, 12);
+    build_canonical_table(STD_LUMA_AC_BITS,   STD_LUMA_AC_VALS,   162, g_huff_ac_luma_table,   256);
+    build_canonical_table(STD_CHROMA_AC_BITS, STD_CHROMA_AC_VALS, 162, g_huff_ac_chroma_table, 256);
+}
 //==================================================================================
 // LÓGICA DE HUFFMAN - ESCRITA (ENCODING)
 //==================================================================================
@@ -582,7 +648,7 @@ void printHeaders(BITMAPFILEHEADER *FileHeader, BITMAPINFOHEADER *InfoHeader)
     system("pause");
 }
 
-Pixel **loadBMPImage(FILE *input, BITMAPINFOHEADER *InfoHeader)
+Pixel **loadBMPImage(FILE *input, BITMAPFILEHEADER *FileHeader, BITMAPINFOHEADER *InfoHeader)
 {
     Pixel **Image = (Pixel **)malloc(InfoHeader->Height * sizeof(Pixel *)); //
     for (int i = 0; i < InfoHeader->Height; i++)
@@ -590,14 +656,54 @@ Pixel **loadBMPImage(FILE *input, BITMAPINFOHEADER *InfoHeader)
         Image[i] = (Pixel *)malloc(InfoHeader->Width * sizeof(Pixel));
     }
 
-    fseek(input, 54, SEEK_SET); // skipping the header (54 bytes)
-    for (int i = 0; i < InfoHeader->Height; i++)
+    // Seek to pixel data using header offset
+    fseek(input, FileHeader->OffBits, SEEK_SET);
+
+    int width = InfoHeader->Width;
+    int height = InfoHeader->Height;
+    int bits_per_pixel = InfoHeader->BitCount;
+    int bytes_per_pixel = bits_per_pixel / 8;
+    int row_stride_file = ((bits_per_pixel * width + 31) / 32) * 4;
+
+    // Read bottom-up if height > 0 (standard BMP). Map to top-down in Image array.
+    for (int y = 0; y < height; y++)
     {
-        for (int j = 0; j < InfoHeader->Width; j++)
+        int dst_row = (height > 0) ? (height - 1 - y) : y;
+        long row_start = (long)FileHeader->OffBits + (long)y * row_stride_file;
+        fseek(input, row_start, SEEK_SET);
+
+        for (int x = 0; x < width; x++)
         {
-            fread(&Image[i][j].R, sizeof(unsigned char), 1, input);
-            fread(&Image[i][j].G, sizeof(unsigned char), 1, input);
-            fread(&Image[i][j].B, sizeof(unsigned char), 1, input);
+            unsigned char b = 0, g = 0, r = 0, a = 0;
+            if (bytes_per_pixel == 3)
+            {
+                fread(&b, 1, 1, input);
+                fread(&g, 1, 1, input);
+                fread(&r, 1, 1, input);
+            }
+            else if (bytes_per_pixel == 4)
+            {
+                fread(&b, 1, 1, input);
+                fread(&g, 1, 1, input);
+                fread(&r, 1, 1, input);
+                fread(&a, 1, 1, input); // ignore alpha
+            }
+            else if (bytes_per_pixel == 1)
+            {
+                // Grayscale indexed not supported; read as gray
+                fread(&b, 1, 1, input);
+                g = b; r = b;
+            }
+            else
+            {
+                // Unsupported bpp, attempt to skip
+                fread(&b, 1, 1, input);
+                fread(&g, 1, 1, input);
+                fread(&r, 1, 1, input);
+            }
+            Image[dst_row][x].R = r;
+            Image[dst_row][x].G = g;
+            Image[dst_row][x].B = b;
         }
     }
     return Image;
@@ -611,6 +717,23 @@ void exportImage(char *output_filename, BITMAPFILEHEADER *FileHeader, BITMAPINFO
         printf("Error: could not open output file.");
         exit(1);
     }
+
+    int width = InfoHeader->Width;
+    int height = InfoHeader->Height;
+    int bits_per_pixel = InfoHeader->BitCount;
+    if (bits_per_pixel != 24 && bits_per_pixel != 32)
+    {
+        bits_per_pixel = 24; // fallback to 24bpp
+        InfoHeader->BitCount = 24;
+    }
+    int bytes_per_pixel = bits_per_pixel / 8;
+    int row_stride_file = ((bits_per_pixel * width + 31) / 32) * 4;
+
+    // Update header sizes
+    InfoHeader->SizeImage = row_stride_file * height;
+    FileHeader->Size = FileHeader->OffBits + InfoHeader->SizeImage;
+
+    // Write headers
     fwrite(&FileHeader->Type, sizeof(unsigned short), 1, file_pointer);
     fwrite(&FileHeader->Size, sizeof(unsigned int), 1, file_pointer);
     fwrite(&FileHeader->Reserved1, sizeof(unsigned short int), 1, file_pointer);
@@ -629,19 +752,45 @@ void exportImage(char *output_filename, BITMAPFILEHEADER *FileHeader, BITMAPINFO
     fwrite(&InfoHeader->NColours, sizeof(unsigned int), 1, file_pointer);
     fwrite(&InfoHeader->ImportantColours, sizeof(unsigned int), 1, file_pointer);
 
-    printf("-> Exporting image to %s\n", output_filename);
-    printf("-> Image size: %d x %d\n", InfoHeader->Width, InfoHeader->Height);
-    for (int i = 0; i < InfoHeader->Height; i++)
+    // Write pixels bottom-up in BGR(A) with proper stride/padding
+    unsigned char pad[4] = {0, 0, 0, 0};
+    for (int y = 0; y < height; y++)
     {
-        for (int j = 0; j < InfoHeader->Width; j++)
+        int src_row = (height > 0) ? (height - 1 - y) : y;
+        int written = 0;
+        for (int x = 0; x < width; x++)
         {
-            fwrite(&Image[i][j].R, sizeof(unsigned char), 1, file_pointer);
-            fwrite(&Image[i][j].G, sizeof(unsigned char), 1, file_pointer);
-            fwrite(&Image[i][j].B, sizeof(unsigned char), 1, file_pointer);
+            unsigned char r = Image[src_row][x].R;
+            unsigned char g = Image[src_row][x].G;
+            unsigned char b = Image[src_row][x].B;
+            fwrite(&b, 1, 1, file_pointer);
+            fwrite(&g, 1, 1, file_pointer);
+            fwrite(&r, 1, 1, file_pointer);
+            written += 3;
+            if (bytes_per_pixel == 4)
+            {
+                unsigned char a = 0x00;
+                fwrite(&a, 1, 1, file_pointer);
+                written += 1;
+            }
+        }
+        // pad to row_stride_file
+        int pad_bytes = row_stride_file - written;
+        if (pad_bytes > 0)
+        {
+            fwrite(pad, 1, pad_bytes, file_pointer);
         }
     }
 
     fclose(file_pointer);
+}
+
+unsigned char **allocate_y_u8(BITMAPINFOHEADER InfoHeader)
+{
+    unsigned char **Y = (unsigned char **)malloc(InfoHeader.Height * sizeof(unsigned char *));
+    for (int i = 0; i < InfoHeader.Height; i++)
+        Y[i] = (unsigned char *)malloc(InfoHeader.Width * sizeof(unsigned char));
+    return Y;
 }
 
 double ***allocate_blocks_Y(int num_blocks)
@@ -890,6 +1039,30 @@ void fillBlocks_chr(Chromancy ***blocks, int num_blocks, Chromancy **Chromancy, 
     }
 }
 
+void mergeBlocks_Y(double ***blocks, int num_blocks, unsigned char **Y_out, BITMAPINFOHEADER InfoHeader)
+{
+    int num_blocks_per_row = InfoHeader.Width / BLOCK_SIZE;
+
+    for (int k = 0; k < num_blocks; k++)
+    {
+        int start_row = (k / num_blocks_per_row) * BLOCK_SIZE;
+        int start_col = (k % num_blocks_per_row) * BLOCK_SIZE;
+
+        for (int i = 0; i < BLOCK_SIZE; i++)
+        {
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
+                double v = blocks[k][i][j];
+                if (v < 0) 
+                    v = 0; 
+                if (v > 255) 
+                    v = 255;
+                Y_out[start_row + i][start_col + j] = (unsigned char)(v + 0.5);
+            }
+        }
+    }
+}
+
 void applyDCT_Y(double ***blocks, int num_blocks)
 {
     double temp[BLOCK_SIZE][BLOCK_SIZE];
@@ -1061,7 +1234,7 @@ void applyQuantization_Y(double ***blocks, int num_blocks, const int div_mat[8][
         {
             for (int j = 0; j < BLOCK_SIZE; j++)
             {
-                blocks[k][i][j] = blocks[k][i][j] / div_mat[i][j];
+                blocks[k][i][j] = round(blocks[k][i][j] / div_mat[i][j]);
             }
         }
     }
@@ -1075,8 +1248,37 @@ void applyQuantization_chr(Chromancy ***blocks, int num_blocks, const int div_ma
         {
             for (int j = 0; j < BLOCK_SIZE; j++)
             {
-                blocks[k][i][j].Cb = blocks[k][i][j].Cb / div_mat[i][j];
-                blocks[k][i][j].Cr = blocks[k][i][j].Cr / div_mat[i][j];
+                blocks[k][i][j].Cb = round(blocks[k][i][j].Cb / div_mat[i][j]);
+                blocks[k][i][j].Cr = round(blocks[k][i][j].Cr / div_mat[i][j]);
+            }
+        }
+    }
+}
+
+void applyDequantization_Y(double ***blocks, int num_blocks, const int mul_mat[8][8])
+{
+    for (int k = 0; k < num_blocks; k++)
+    {
+        for (int i = 0; i < BLOCK_SIZE; i++)
+        {
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
+                blocks[k][i][j] = blocks[k][i][j] * mul_mat[i][j];
+            }
+        }
+    }
+}
+
+void applyDequantization_chr(Chromancy ***blocks, int num_blocks, const int mul_mat[8][8])
+{
+    for (int k = 0; k < num_blocks; k++)
+    {
+        for (int i = 0; i < BLOCK_SIZE; i++)
+        {
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
+                blocks[k][i][j].Cb = blocks[k][i][j].Cb * mul_mat[i][j];
+                blocks[k][i][j].Cr = blocks[k][i][j].Cr * mul_mat[i][j];
             }
         }
     }
