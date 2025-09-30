@@ -7,7 +7,8 @@
 
 This project implements a baseline JPEG compressor and decompressor in C without using external image libraries. It applies the standard JPEG theory end‑to‑end, including color conversion, blockwise 2D DCT, quantization, zig‑zag scan, run‑length and Huffman entropy coding. All required tables (DCT transform matrix; luminance and chrominance quantization matrices for 25%, 50%, and 75% target qualities) are embedded in the source. The compressor processes 8×8 blocks over luminance and chrominance planes; the decompressor applies the inverse steps to reconstruct a BMP image.
 
-Figures below illustrate the pipeline and showcase compression results.
+Figures below illustrate the pipeline and showcase compression results.e
+
 
 <p align="center">
   <img src="docs/readme_content/schematic_conversion.png" alt="Figure 1 — Schematic conversion" width="110%" />
@@ -96,19 +97,19 @@ At the end of compression, the entropy‑coded bytestream is written to a `.bin`
 The following examples illustrate the compression effectiveness (original size → compressed size image thumbnails):
 
 <p align="center">
-  <img src="docs/readme_content/sorvete25.png" alt="Figure 8 — sorvete at 25%" width="55%" />
+  <img src="docs/readme_content/sorvete25.png" alt="Figure 8 — sorvete at 25%" width="35%" />
   <br>
   <em>Figure 8 — sorvete.bmp, 11 MB → 179 KB.</em>
 </p>
  
 <p align="center">
-  <img src="docs/readme_content/cano25.png" alt="Figure 9 — cano at 25%" width="55%" />
+  <img src="docs/readme_content/cano25.png" alt="Figure 9 — cano at 25%" width="35%" />
   <br>
   <em>Figure 9 — cano.bmp, 1.0 MB → 118 KB.</em>
 </p>
 
 <p align="center">
-  <img src="docs/readme_content/lago25.png" alt="Figure 10 — lago2 at 25%" width="55%" />
+  <img src="docs/readme_content/lago25.png" alt="Figure 10 — lago2 at 25%" width="35%" />
   <br>
   <em>Figure 10 — lago2.bmp, 72 MB → 10 MB.</em>
 </p>
