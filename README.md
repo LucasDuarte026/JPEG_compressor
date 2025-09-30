@@ -24,30 +24,26 @@ In addition to directly evaluating the separable DCT formula, we leverage the ma
 
 
 <div align="center">
+
   <img src="docs/readme_content/DCT_transform.png" alt="Figure 2 — DCT formula" width="110%" />
   <figcaption><b>Figure 2 — DCT transform formula (2D separable DCT).</b></figcaption>
-  <br/>
-  <div style="font-size:1.1em; margin-top: 10px;">
+
+  <div style="font-size:1.1em; margin-top: 16px;">
     <b>Mathematical Formula:</b>
     <br/>
-    <span>
-      <img src="https://latex.codecogs.com/svg.image?F(u,v)&space;=&space;\frac{1}{4}&space;\alpha(u)&space;\alpha(v)&space;\sum_{x=0}^{7}&space;\sum_{y=0}^{7}&space;f(x,y)&space;\cos\left[\frac{(2x&plus;1)u\pi}{16}\right]&space;\cos\left[\frac{(2y&plus;1)v\pi}{16}\right]" alt="DCT 2D formula" style="background: ; filter: brightness(0) invert(1); width: 90%; max-width: 700px;"/>
-    </span>
-    <br/>
-    
-    
+    <img src="https://latex.codecogs.com/svg.image?F(u,v)&space;=&space;\frac{1}{4}&space;\alpha(u)&space;\alpha(v)&space;\sum_{x=0}^{7}&space;\sum_{y=0}^{7}&space;f(x,y)&space;\cos\left[\frac{(2x&plus;1)u\pi}{16}\right]&space;\cos\left[\frac{(2y&plus;1)v\pi}{16}\right]" alt="DCT 2D formula" style="background: ; filter: brightness(0) invert(1); width: 90%; max-width: 700px;"/>
   </div>
+
 </div>
-<figure align="center" style="font-size:1.1em; margin-top: 10px;">
-    <b>Matricial Formula:</b> 
+
+<div align="center" style="font-size:1.1em; margin-top: 16px;">
+  <b>Matricial Formula:</b>
+  <br/>
   <img src="docs/readme_content/DCT_transform_matrix.png" alt="Figure 3 — DCT transform matrix" width="90%" />
   <figcaption>Figure 3 — Example DCT transform matrix (8×8).</figcaption>
-</figure>
-  <div style="font-size:1.1em; margin-top: 10px;">
-
-<div align="center">
-  <img src="https://latex.codecogs.com/svg.image?B%20%3D%20M%20%5Ccdot%20A%20%5Ccdot%20M%5E%7B%5Ctop%7D" 
-       alt="B = M · A · Mᵗ" 
+  <br/>
+  <img src="https://latex.codecogs.com/svg.image?B%20%3D%20M%20%5Ccdot%20A%20%5Ccdot%20M%5E%7B%5Ctop%7D"
+       alt="B = M · A · Mᵗ"
        style="background: ; filter: brightness(0) invert(1); width: 200px; height: 100px;"/>
 </div>
 
@@ -96,21 +92,17 @@ At the end of compression, the entropy‑coded bytestream is written to a `.bin`
 The following examples illustrate the compression effectiveness (original size → compressed size image thumbnails):
 
 <figure align="center">
-  <img src="docs/readme_content/sorvete25.png" alt="Figure 8 — sorvete at 25%" width="80%" />
+  <img src="docs/readme_content/sorvete25.png" alt="Figure 8 — sorvete at 25%" width="55%" />
   <figcaption>Figure 8 — sorvete.bmp, 11 MB → 179 KB.</figcaption>
 </figure>
-
-
-
-
-
+ 
 <figure align="center">
-  <img src="docs/readme_content/cano25.png" alt="Figure 9 — cano at 25%" width="80%" />
+  <img src="docs/readme_content/cano25.png" alt="Figure 9 — cano at 25%" width="55%" />
   <figcaption>Figure 9 — cano.bmp, 1.0 MB → 118 KB.</figcaption>
 </figure>
 
 <figure align="center">
-  <img src="docs/readme_content/lago25.png" alt="Figure 10 — lago2 at 25%" width="80%" />
+  <img src="docs/readme_content/lago25.png" alt="Figure 10 — lago2 at 25%" width="55%" />
   <figcaption>Figure 10 — lago2.bmp, 72 MB → 10 MB.</figcaption>
 </figure>
 
