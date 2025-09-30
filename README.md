@@ -1,6 +1,6 @@
 ## JPEG Compressor in C (from scratch)
 
-**Author**: Lucas Sales Duarte
+**Author**: Lucas Sales Duarte  
 **Institution**: University of São Paulo (USP) — ICMC, São Carlos  
 **Subject**: SCC0661 — Multimedia and Hypermedia — USP — São Carlos  
 [SCC0661 — Multimídia e Hipermídia — USP](https://uspdigital.usp.br/jupiterweb/obterDisciplina?nomdis=&sgldis=SCC0661)
@@ -9,10 +9,11 @@ This project implements a baseline JPEG compressor and decompressor in C without
 
 Figures below illustrate the pipeline and showcase compression results.
 
-<figure align="center">
+<p align="center">
   <img src="docs/readme_content/schematic_conversion.png" alt="Figure 1 — Schematic conversion" width="110%" />
-  <figcaption>Figure 1 — Schematic of the JPEG conversion/compression pipeline.</figcaption>
-</figure>
+  <br>
+  <em>Figure 1 — Schematic of the JPEG conversion/compression pipeline.</em>
+</p>
 
 ---
 
@@ -22,30 +23,29 @@ We apply the separable 2D DCT to each 8×8 block of both luminance and chrominan
 
 In addition to directly evaluating the separable DCT formula, we leverage the matrix property illustrated below to efficiently compute the transformation using matrix multiplications, as depicted in Figure 3:
 
-
-<div align="center">
-
+<p align="center">
   <img src="docs/readme_content/DCT_transform.png" alt="Figure 2 — DCT formula" width="110%" />
-  <figcaption><b>Figure 2 — DCT transform formula (2D separable DCT).</b></figcaption>
+  <br>
+  <b><em>Figure 2 — DCT transform formula (2D separable DCT).</em></b>
+</p>
 
-  <div style="font-size:1.1em; margin-top: 16px;">
-    <b>Mathematical Formula:</b>
-    <br/>
-    <img src="https://latex.codecogs.com/svg.image?F(u,v)&space;=&space;\frac{1}{4}&space;\alpha(u)&space;\alpha(v)&space;\sum_{x=0}^{7}&space;\sum_{y=0}^{7}&space;f(x,y)&space;\cos\left[\frac{(2x&plus;1)u\pi}{16}\right]&space;\cos\left[\frac{(2y&plus;1)v\pi}{16}\right]" alt="DCT 2D formula" style="background: ; filter: brightness(0) invert(1); width: 90%; max-width: 700px;"/>
-  </div>
+<p align="center" style="font-size:1.1em; margin-top: 16px;">
+  <b>Mathematical Formula:</b>
+  <br/>
+  <img src="https://latex.codecogs.com/svg.image?F(u,v)&space;=&space;\frac{1}{4}&space;\alpha(u)&space;\alpha(v)&space;\sum_{x=0}^{7}&space;\sum_{y=0}^{7}&space;f(x,y)&space;\cos\left[\frac{(2x&plus;1)u\pi}{16}\right]&space;\cos\left[\frac{(2y&plus;1)v\pi}{16}\right]" alt="DCT 2D formula" style="background: ; filter: brightness(0) invert(1); width: 90%; max-width: 700px;"/>
+</p>
 
-</div>
-
-<div align="center" style="font-size:1.1em; margin-top: 16px;">
+<p align="center" style="font-size:1.1em; margin-top: 16px;">
   <b>Matricial Formula:</b>
   <br/>
   <img src="docs/readme_content/DCT_transform_matrix.png" alt="Figure 3 — DCT transform matrix" width="90%" />
-  <figcaption>Figure 3 — Example DCT transform matrix (8×8).</figcaption>
+  <br>
+  <em>Figure 3 — Example DCT transform matrix (8×8).</em>
   <br/>
   <img src="https://latex.codecogs.com/svg.image?B%20%3D%20M%20%5Ccdot%20A%20%5Ccdot%20M%5E%7B%5Ctop%7D"
        alt="B = M · A · Mᵗ"
        style="background: ; filter: brightness(0) invert(1); width: 200px; height: 100px;"/>
-</div>
+</p>
 
 ---
 
@@ -53,10 +53,11 @@ In addition to directly evaluating the separable DCT formula, we leverage the ma
 
 After the DCT, coefficients are quantized using luminance and chrominance quantization tables corresponding to selected quality levels (25%, 50%, 75%). Quantization normalizes each frequency coefficient by a perceptual weight; higher frequencies are coarsely quantized (divided by larger values), often with minimal perceived impact due to human visual system sensitivity.
 
-<figure align="center">
+<p align="center">
   <img src="docs/readme_content/quant_tables.png" alt="Figure 4 — Quantization tables (50%)" width="100%" />
-  <figcaption>Figure 4 — Example quantization tables (luminance and chrominance) for 50% quality.</figcaption>
-</figure>
+  <br>
+  <em>Figure 4 — Example quantization tables (luminance and chrominance) for 50% quality.</em>
+</p>
 
 ---
 
@@ -64,10 +65,11 @@ After the DCT, coefficients are quantized using luminance and chrominance quanti
 
 Quantized 8×8 blocks are vectorized via zig‑zag order to group low‑frequency coefficients first, then encoded by run‑length of zeros followed by value pairs. Finally, standard JPEG‑style Huffman coding is applied to produce a compact bitstream.
 
-<figure align="center">
+<p align="center">
   <img src="docs/readme_content/zig_zag.png" alt="Figure 5 — Zig‑zag order" width="45%" />
-  <figcaption>Figure 5 — Zig‑zag vectorization pattern for 8×8 blocks.</figcaption>
-</figure>
+  <br>
+  <em>Figure 5 — Zig‑zag vectorization pattern for 8×8 blocks.</em>
+</p>
 
 At the end of compression, the entropy‑coded bytestream is written to a `.bin` file. Decompression reverses all steps (Huffman decoding, run‑length expansion, inverse zig‑zag, dequantization, and inverse DCT) to reconstruct the original BMP.
 
@@ -75,15 +77,17 @@ At the end of compression, the entropy‑coded bytestream is written to a `.bin`
 
 ### Source BMPs (illustrative inputs)
 
-<figure align="center">
+<p align="center">
   <img src="bmp_source/cano.bmp" alt="Figure 6 — Small BMP input" width="60%" />
-  <figcaption>Figure 6 — Example small BMP input (bmp_source/cano.bmp, ~1.0 MB).</figcaption>
-</figure>
+  <br>
+  <em>Figure 6 — Example small BMP input (bmp_source/cano.bmp, ~1.0 MB).</em>
+</p>
 
-<figure align="center">
+<p align="center">
   <img src="bmp_source/lago2.bmp" alt="Figure 7 — Large BMP input" width="100%" />
-  <figcaption>Figure 7 — Example large BMP input (bmp_source/lago2.bmp, ~72 MB).</figcaption>
-</figure>
+  <br>
+  <em>Figure 7 — Example large BMP input (bmp_source/lago2.bmp, ~72 MB).</em>
+</p>
 
 ---
 
@@ -91,20 +95,23 @@ At the end of compression, the entropy‑coded bytestream is written to a `.bin`
 
 The following examples illustrate the compression effectiveness (original size → compressed size image thumbnails):
 
-<figure align="center">
+<p align="center">
   <img src="docs/readme_content/sorvete25.png" alt="Figure 8 — sorvete at 25%" width="55%" />
-  <figcaption>Figure 8 — sorvete.bmp, 11 MB → 179 KB.</figcaption>
-</figure>
+  <br>
+  <em>Figure 8 — sorvete.bmp, 11 MB → 179 KB.</em>
+</p>
  
-<figure align="center">
+<p align="center">
   <img src="docs/readme_content/cano25.png" alt="Figure 9 — cano at 25%" width="55%" />
-  <figcaption>Figure 9 — cano.bmp, 1.0 MB → 118 KB.</figcaption>
-</figure>
+  <br>
+  <em>Figure 9 — cano.bmp, 1.0 MB → 118 KB.</em>
+</p>
 
-<figure align="center">
+<p align="center">
   <img src="docs/readme_content/lago25.png" alt="Figure 10 — lago2 at 25%" width="55%" />
-  <figcaption>Figure 10 — lago2.bmp, 72 MB → 10 MB.</figcaption>
-</figure>
+  <br>
+  <em>Figure 10 — lago2.bmp, 72 MB → 10 MB.</em>
+</p>
 
 ---
 
