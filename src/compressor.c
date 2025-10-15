@@ -1,3 +1,27 @@
+/*
+ * JPEG Compressor CLI
+ * Author: Lucas Sales Duarte
+ *
+ * Project Intent:
+ *     Convert uncompressed BMP images into a JPEG-like representation,
+ *     applying DCT, quantization, and Huffman coding while preserving
+ *     visual quality in a compact binary stream.
+ *
+ * Compression Quality Options:
+ *     75%  -> higher visual quality, lower compression.
+ *     50%  -> balanced visual quality and compression.
+ *     25%  -> aggressive compression with noticeable artifacts.
+ *
+ * How to Use:
+ *     1. Build the project (e.g., `make` to generate ./bin/main).
+ *     2. Run: ./bin/main <quality> <source.bmp> <result.bmp>
+ *            - <quality> must be one of 75, 50, or 25.
+ *            - <source.bmp> is the input BMP located in the project tree.
+ *            - <result.bmp> is the reconstructed BMP written after decoding.
+ *     3. The program also emits a combined Huffman bitstream (.bin) alongside
+ *        the output image for inspection or archival purposes.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
