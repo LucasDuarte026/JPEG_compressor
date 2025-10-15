@@ -44,44 +44,44 @@ typedef struct
  
 
 //==================================================================================
-// ESTRUTURAS PARA HUFFMAN
+// HUFFMAN STRUCTURES
 //==================================================================================
 
 typedef struct
 {
-    uint32_t code; // O código de bits de Huffman
-    int      length; // O número de bits no código
+    uint32_t code;  // Huffman bit pattern
+    int      length; // Number of bits in the code
 } HuffmanCode;
 
 typedef struct
 {
-    // As tabelas padrão do Anexo K do JPEG
+    // Canonical Annex K JPEG tables
     HuffmanCode* dc_table;
     HuffmanCode* ac_table;
 } HuffmanTable;
 
-// Estrutura para gerenciar a escrita bit a bit em um arquivo
+// Structure that manages bit-level writing to a file
 typedef struct
 {
     FILE* file;
-    uint8_t buffer;     // Buffer temporário de 8 bits
-    int     bit_count;  // Quantos bits estão em uso no buffer
+    uint8_t buffer;     // Temporary 8-bit buffer
+    int     bit_count;  // Number of bits currently stored in the buffer
 } BitstreamWriter;
 
-// Estrutura para gerenciar a leitura bit a bit de um arquivo
+// Structure that manages bit-level reading from a file
 typedef struct
 {
     FILE* file;
-    uint8_t buffer;          // Buffer temporário de 8 bits
-    int     bit_position;    // Posição do próximo bit a ser lido (de 7 a -1)
+    uint8_t buffer;          // Temporary 8-bit buffer
+    int     bit_position;    // Position of the next bit to read (from 7 down to -1)
 } BitstreamReader;
 
 
 //==================================================================================
-// CONSTANTES E TABELAS GLOBAIS
+// CONSTANTS AND GLOBAL TABLES
 //==================================================================================
 
-// --- Matrizes de Quantização ---
+// --- Quantization Matrices ---
 extern const int LUMINANCE_Q50[8][8];
 extern const int CHROMINANCE_Q50[8][8];
 extern const int LUMINANCE_Q75[8][8];
@@ -89,14 +89,14 @@ extern const int CHROMINANCE_Q75[8][8];
 extern const int LUMINANCE_Q25[8][8];
 extern const int CHROMINANCE_Q25[8][8];
 
-// --- Matrizes DCT ---
+// --- DCT Matrices ---
 extern const double M_dct[8][8];
 extern const double M_dct_t[8][8];
 
-// --- Mapa Zig-Zag ---
+// --- Zig-Zag Map ---
 extern const int g_zigzag_map[64];
 
-// --- Tabelas de Huffman (definidas em image_utils.c) ---
+// --- Huffman Tables (defined in image_utils.c) ---
 extern HuffmanTable g_luma_huff_tables;
 extern HuffmanTable g_chroma_huff_tables;
 
@@ -120,14 +120,14 @@ typedef struct /**** BMP file info structure ****/
 void leituraInfoHeader(FILE *F, BITMAPINFOHEADER *INFO_H);
 void leituraHeader(FILE *F, BITMAPFILEHEADER *H);
 
-// --- Funções de Manipulação de BMP ---
+// --- BMP Handling Functions ---
 void loadBMPHeaders(FILE *fp, BITMAPFILEHEADER *FileHeader, BITMAPINFOHEADER *InfoHeader);
 void printHeaders(BITMAPFILEHEADER *FileHeader, BITMAPINFOHEADER *InfoHeader);
 void exportImage(char *output_filename, BITMAPFILEHEADER *FileHeader, BITMAPINFOHEADER *InfoHeader, Pixel **Image);
 Pixel **loadBMPImage(FILE *input, BITMAPFILEHEADER *FileHeader, BITMAPINFOHEADER *InfoHeader);
 Pixel **convertBMP(unsigned char **Y, Chromancy **chromancy, BITMAPINFOHEADER *InfoHeader);
 
-// --- Funções de Alocação de Memória ---
+// --- Memory Allocation Functions ---
 double **allocate_memory(BITMAPINFOHEADER InfoHeader);
 double ***allocate_blocks_Y(int num_blocks);
 Chromancy ***allocate_blocks_chr(int num_blocks_chr);
@@ -136,13 +136,14 @@ void        free_blocks_chr(Chromancy ***blocks, int num_blocks);
 void        freeImage(double ***matrix, int height, int width);
 unsigned char **allocate_y_u8(BITMAPINFOHEADER InfoHeader);
 void mergeBlocks_Y(double ***blocks, int num_blocks, unsigned char **Y_out, BITMAPINFOHEADER InfoHeader);
+void mergeBlocks_chr(Chromancy ***blocks, int num_blocks_chr, Chromancy **chromancy_out, BITMAPINFOHEADER InfoHeader);
 
 
-// --- Funções de Manipulação de Blocos ---
+// --- Block Manipulation Functions ---
 void fillBlocks_Y(double ***blocks, int num_blocks, double **Y, BITMAPINFOHEADER InfoHeader);
 void fillBlocks_chr(Chromancy ***blocks, int num_blocks_chr, Chromancy **compressed_chromancy, BITMAPINFOHEADER InfoHeader);
 
-// --- Funções de Huffman ---
+// --- Huffman Functions ---
 void bitstream_writer_init(BitstreamWriter* writer, FILE* f);
 void bitstream_writer_flush(BitstreamWriter* writer);
 void encode_block(int block[BLOCK_SIZE][BLOCK_SIZE], int* prev_dc, HuffmanTable* huff_tables, BitstreamWriter* writer);

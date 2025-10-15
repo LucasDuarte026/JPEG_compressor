@@ -4,12 +4,12 @@
 #include <string.h>
 
 //==================================================================================
-// DEFINIÇÃO DAS TABELAS GLOBAIS
+// GLOBAL TABLE DEFINITIONS
 //==================================================================================
 
-// --- Qualidade 75% (Alta Qualidade, Baixa Compressão) ---
+// --- Quality 75% (High Quality, Low Compression) ---
 
-// Matriz de Luminância (Y) - Qualidade 75%
+// Luminance matrix (Y) - Quality 75%
 const int LUMINANCE_Q75[8][8] = {
     {8, 6, 5, 8, 12, 20, 26, 31},
     {6, 6, 7, 10, 13, 29, 30, 28},
@@ -20,7 +20,7 @@ const int LUMINANCE_Q75[8][8] = {
     {25, 32, 39, 44, 52, 61, 60, 51},
     {36, 46, 48, 49, 56, 50, 52, 50}};
 
-// Matriz de Crominância (Cb/Cr) - Qualidade 75%
+// Chrominance matrix (Cb/Cr) - Quality 75%
 const int CHROMINANCE_Q75[8][8] = {
     {9, 9, 12, 24, 50, 50, 50, 50},
     {9, 11, 13, 33, 50, 50, 50, 50},
@@ -31,9 +31,9 @@ const int CHROMINANCE_Q75[8][8] = {
     {50, 50, 50, 50, 50, 50, 50, 50},
     {50, 50, 50, 50, 50, 50, 50, 50}};
 
-// --- Qualidade 50% (Padrão/Base) ---
+// --- Quality 50% (Baseline) ---
 
-// Matriz de Luminância (Y) - Qualidade 50%
+// Luminance matrix (Y) - Quality 50%
 const int LUMINANCE_Q50[8][8] = {
     {16, 11, 10, 16, 24, 40, 51, 61},
     {12, 12, 14, 19, 26, 58, 60, 55},
@@ -44,7 +44,7 @@ const int LUMINANCE_Q50[8][8] = {
     {49, 64, 78, 87, 103, 121, 120, 101},
     {72, 92, 95, 98, 112, 100, 103, 99}};
 
-// Matriz de Crominância (Cb/Cr) - Qualidade 50%
+// Chrominance matrix (Cb/Cr) - Quality 50%
 const int CHROMINANCE_Q50[8][8] = {
     {17, 18, 24, 47, 99, 99, 99, 99},
     {18, 21, 26, 66, 99, 99, 99, 99},
@@ -55,9 +55,9 @@ const int CHROMINANCE_Q50[8][8] = {
     {99, 99, 99, 99, 99, 99, 99, 99},
     {99, 99, 99, 99, 99, 99, 99, 99}};
 
-// --- Qualidade 25% (Baixa Qualidade, Alta Compressão) ---
+// --- Quality 25% (Low Quality, High Compression) ---
 
-// Matriz de Luminância (Y) - Qualidade 25%
+// Luminance matrix (Y) - Quality 25%
 const int LUMINANCE_Q25[8][8] = {
     {32, 22, 20, 32, 48, 80, 102, 122},
     {24, 24, 28, 38, 52, 116, 120, 110},
@@ -68,7 +68,7 @@ const int LUMINANCE_Q25[8][8] = {
     {98, 128, 156, 174, 206, 242, 240, 202},
     {144, 184, 190, 196, 224, 200, 206, 198}};
 
-// Matriz de Crominância (Cb/Cr) - Qualidade 25%
+// Chrominance matrix (Cb/Cr) - Quality 25%
 const int CHROMINANCE_Q25[8][8] = {
     {34, 36, 48, 94, 198, 198, 198, 198},
     {36, 42, 52, 132, 198, 198, 198, 198},
@@ -108,26 +108,26 @@ const int g_zigzag_map[64] = {
     58, 59, 52, 45, 38, 31, 39, 46, 53, 60, 61, 54, 47, 55, 62, 63};
 
 /*
-// Luminância DC
+// Luminance DC
 HuffmanCode g_huff_dc_luma[12] = {
     {0x00, 2}, {0x02, 3}, {0x03, 3}, {0x04, 3}, {0x05, 3}, {0x06, 3}, {0x0E, 4}, {0x1E, 5}, {0x3E, 6}, {0x7E, 7}, {0xFE, 8}, {0x1FE, 9}};
 
-    // Crominância DC
+    // Chrominance DC
     HuffmanCode g_huff_dc_chroma[12] = {
         {0x00, 2}, {0x01, 2}, {0x02, 2}, {0x06, 3}, {0x0E, 4}, {0x1E, 5}, {0x3E, 6}, {0x7E, 7}, {0xFE, 8}, {0x1FE, 9}, {0x3FE, 10}, {0x7FE, 11}};
 
-        // Luminância AC
+        // Luminance AC
         HuffmanCode g_huff_ac_luma[256] = {
     {0x0A, 4}, {0x00, 2}, {0x01, 2}, {0x04, 3}, {0x0B, 4}, {0x1A, 5}, {0x78, 7}, {0xF7C, 12}, {0x05, 3}, {0x1B, 5}, {0xF7D, 12}, {0xFFDCC, 20}, {0x1C, 5}, {0x38, 6}, {0x79, 7}, {0xF7E, 12}, {0xFFDCD, 20}, {0xFFDD0, 20}, {0x02, 3}, {0x0C, 4}, {0x39, 6}, {0xF7F, 12}, {0xFFDD1, 20}, {0xFFDD2, 20}, {0xFFDD3, 20}, {0xFFDD4, 20}, {0xFFDD5, 20}, {0xFFDD6, 20}, {0xFFDD7, 20}, {0xFFDD8, 20}, {0x1D, 5}, {0x58, 7}, {0xF80, 12}, {0xFFDD9, 20}, {0xFFDDA, 20}, {0xFFDDB, 20}, {0xFFDDC, 20}, {0xFFDDD, 20}, {0xFFDDE, 20}, {0xFFDDF, 20}, {0xFFDE0, 20}, {0xFFDE1, 20}, {0x06, 3}, {0x1E, 5}, {0x98, 8}, {0xF81, 12}, {0xFFDE2, 20}, {0xFFDE3, 20}, {0xFFDE4, 20}, {0xFFDE5, 20}, {0xFFDE6, 20}, {0xFFDE7, 20}, {0xFFDE8, 20}, {0xFFDE9, 20}, {0x0D, 4}, {0x3A, 6}, {0xF82, 12}, {0xFFDEA, 20}, {0xFFDEB, 20}, {0xFFDEC, 20}, {0xFFDED, 20}, {0xFFDEE, 20}, {0xFFDEF, 20}, {0xFFDF0, 20}, {0xFFDF1, 20}, {0xFFDF2, 20}, {0x1F, 5}, {0x59, 7}, {0xF83, 12}, {0xFFDF3, 20}, {0xFFDF4, 20}, {0xFFDF5, 20}, {0xFFDF6, 20}, {0xFFDF7, 20}, {0xFFDF8, 20}, {0xFFDF9, 20}, {0xFFDFA, 20}, {0xFFDFB, 20}, {0x0E, 4}, {0x7A, 7}, {0xF84, 12}, {0xFFDFC, 20}, {0xFFDFD, 20}, {0xFFDFE, 20}, {0xFFDFF, 20}, {0xFFE00, 20}, {0xFFE01, 20}, {0xFFE02, 20}, {0xFFE03, 20}, {0xFFE04, 20}, {0x3B, 6}, {0x99, 8}, {0xF85, 12}, {0xFFE05, 20}, {0xFFE06, 20}, {0xFFE07, 20}, {0xFFE08, 20}, {0xFFE09, 20}, {0xFFE0A, 20}, {0xFFE0B, 20}, {0xFFE0C, 20}, {0xFFE0D, 20}, {0x07, 4}, {0x5A, 7}, {0xF86, 12}, {0xFFE0E, 20}, {0xFFE0F, 20}, {0xFFE10, 20}, {0xFFE11, 20}, {0xFFE12, 20}, {0xFFE13, 20}, {0xFFE14, 20}, {0xFFE15, 20}, {0xFFE16, 20}, {0x0F, 4}, {0x7B, 7}, {0xF87, 12}, {0xFFE17, 20}, {0xFFE18, 20}, {0xFFE19, 20}, {0xFFE1A, 20}, {0xFFE1B, 20}, {0xFFE1C, 20}, {0xFFE1D, 20}, {0xFFE1E, 20}, {0xFFE1F, 20}, {0x3C, 6}, {0x9A, 8}, {0xF88, 12}, {0xFFE20, 20}, {0xFFE21, 20}, {0xFFE22, 20}, {0xFFE23, 20}, {0xFFE24, 20}, {0xFFE25, 20}, {0xFFE26, 20}, {0xFFE27, 20}, {0xFFE28, 20}, {0x5B, 7}, {0xF89, 12}, {0xFFE29, 20}, {0xFFE2A, 20}, {0xFFE2B, 20}, {0xFFE2C, 20}, {0xFFE2D, 20}, {0xFFE2E, 20}, {0xFFE2F, 20}, {0xFFE30, 20}, {0xFFE31, 20}, {0xFFE32, 20}, {0x03, 3}, {0x1A, 5}, {0x38, 6}, {0x59, 7}, {0xF7D, 12}, {0xF81, 12}, {0xF86, 12}, {0xFFDCE, 20}, {0x08, 4}, {0x79, 7}, {0xF84, 12}, {0xFFE02, 20}, {0xFFE15, 20}, {0xFFE22, 20}, {0xFFE29, 20}, {0xFFE33, 20}, {0xFFE34, 20}, {0xFFE35, 20}, {0xFFE36, 20}, {0xFFE37, 20}, {0x99, 8}, {0xF88, 12}, {0xFFE38, 20}, {0xFFE39, 20}, {0xFFE3A, 20}, {0xFFE3B, 20}, {0xFFE3C, 20}, {0xFFE3D, 20}, {0xFFE3E, 20}, {0xFFE3F, 20}, {0xFFE40, 20}, {0xFFE41, 20}, {0x09, 4}, {0x39, 6}, {0x58, 7}, {0x98, 8}, {0xF7C, 12}, {0xF7F, 12}, {0xF83, 12}, {0xF8A, 12}, {0xFFE42, 20}, {0x19, 5}, {0x78, 7}, {0xF82, 12}, {0xFFDFB, 20}, {0xFFE12, 20}, {0xFFE1F, 20}, {0xFFE28, 20}, {0xFFE43, 20}, {0xFFE44, 20}, {0xFFE45, 20}, {0xFFE46, 20}, {0xFFE47, 20}, {0xF89, 12}, {0xFFE48, 20}, {0xFFE49, 20}, {0xFFE4A, 20}, {0xFFE4B, 20}, {0xFFE4C, 20}, {0xFFE4D, 20}, {0xFFE4E, 20}, {0xFFE4F, 20}, {0xFFE50, 20}, {0xFFE51, 20}};
 
-    // Crominância AC
+    // Chrominance AC
     HuffmanCode g_huff_ac_chroma[256] = {
         {0xFE590, 19}, {0x00, 2}, {0x01, 2}, {0x02, 3}, {0x0A, 4}, {0x18, 5}, {0x38, 6}, {0x78, 7}, {0xF7C, 12}, {0x0B, 4}, {0x58, 7}, {0xF7D, 12}, {0xFFDCC, 20}, {0x03, 3}, {0x19, 5}, {0x98, 8}, {0xF7E, 12}, {0xFFDCD, 20}, {0x1A, 5}, {0xF7F, 12}, {0xFFDD0, 20}, {0xFFDD1, 20}, {0xFFDD2, 20}, {0xFFDD3, 20}, {0xFFDD4, 20}, {0xFFDD5, 20}, {0xFFDD6, 20}, {0xFFDD7, 20}, {0xFFDD8, 20}, {0xFFDD9, 20}, {0x04, 3}, {0x1B, 5}, {0xF80, 12}, {0xFFDDA, 20}, {0xFFDDB, 20}, {0xFFDDC, 20}, {0xFFDDD, 20}, {0xFFDDE, 20}, {0xFFDDF, 20}, {0xFFDE0, 20}, {0xFFDE1, 20}, {0xFFDE2, 20}, {0x0C, 4}, {0x39, 6}, {0xF81, 12}, {0xFFDE3, 20}, {0xFFDE4, 20}, {0xFFDE5, 20}, {0xFFDE6, 20}, {0xFFDE7, 20}, {0xFFDE8, 20}, {0xFFDE9, 20}, {0xFFDEA, 20}, {0xFFDEB, 20}, {0x1C, 5}, {0x59, 7}, {0xF82, 12}, {0xFFDEC, 20}, {0xFFDED, 20}, {0xFFDEE, 20}, {0xFFDEF, 20}, {0xFFDF0, 20}, {0xFFDF1, 20}, {0xFFDF2, 20}, {0xFFDF3, 20}, {0xFFDF4, 20}, {0x05, 3}, {0x1D, 5}, {0xF83, 12}, {0xFFDF5, 20}, {0xFFDF6, 20}, {0xFFDF7, 20}, {0xFFDF8, 20}, {0xFFDF9, 20}, {0xFFDFA, 20}, {0xFFDFB, 20}, {0xFFDFC, 20}, {0xFFDFD, 20}, {0x0D, 4}, {0x3A, 6}, {0xF84, 12}, {0xFFDFE, 20}, {0xFFDFF, 20}, {0xFFE00, 20}, {0xFFE01, 20}, {0xFFE02, 20}, {0xFFE03, 20}, {0xFFE04, 20}, {0xFFE05, 20}, {0xFFE06, 20}, {0x0E, 4}, {0x5A, 7}, {0xF85, 12}, {0xFFE07, 20}, {0xFFE08, 20}, {0xFFE09, 20}, {0xFFE0A, 20}, {0xFFE0B, 20}, {0xFFE0C, 20}, {0xFFE0D, 20}, {0xFFE0E, 20}, {0xFFE0F, 20}, {0x1E, 5}, {0x79, 7}, {0xF86, 12}, {0xFFE10, 20}, {0xFFE11, 20}, {0xFFE12, 20}, {0xFFE13, 20}, {0xFFE14, 20}, {0xFFE15, 20}, {0xFFE16, 20}, {0xFFE17, 20}, {0xFFE18, 20}, {0x0F, 4}, {0x3B, 6}, {0xF87, 12}, {0xFFE19, 20}, {0xFFE1A, 20}, {0xFFE1B, 20}, {0xFFE1C, 20}, {0xFFE1D, 20}, {0xFFE1E, 20}, {0xFFE1F, 20}, {0xFFE20, 20}, {0xFFE21, 20}, {0x1F, 5}, {0x7A, 7}, {0xF88, 12}, {0xFFE22, 20}, {0xFFE23, 20}, {0xFFE24, 20}, {0xFFE25, 20}, {0xFFE26, 20}, {0xFFE27, 20}, {0xFFE28, 20}, {0xFFE29, 20}, {0xFFE2A, 20}, {0x3C, 6}, {0x99, 8}, {0xF89, 12}, {0xFFE2B, 20}, {0xFFE2C, 20}, {0xFFE2D, 20}, {0xFFE2E, 20}, {0xFFE2F, 20}, {0xFFE30, 20}, {0xFFE31, 20}, {0xFFE32, 20}, {0xFFE33, 20}, {0x06, 4}, {0x1A, 5}, {0x58, 7}, {0xF7C, 12}, {0xF7F, 12}, {0xF82, 12}, {0xF85, 12}, {0xF88, 12}, {0xFFE34, 20}, {0x07, 4}, {0x1B, 5}, {0x78, 7}, {0xF7D, 12}, {0xF80, 12}, {0xF83, 12}, {0xF86, 12}, {0xF89, 12}, {0xFFE35, 20}, {0x38, 6}, {0x98, 8}, {0xF8A, 12}, {0xFFE36, 20}, {0xFFE37, 20}, {0xFFE38, 20}, {0xFFE39, 20}, {0xFFE3A, 20}, {0xFFE3B, 20}, {0xFFE3C, 20}, {0xFFE3D, 20}, {0xFFE3E, 20}, {0x08, 4}, {0x1C, 5}, {0xF8B, 12}, {0xFFE3F, 20}, {0xFFE40, 20}, {0xFFE41, 20}, {0xFFE42, 20}, {0xFFE43, 20}, {0xFFE44, 20}, {0xFFE45, 20}, {0xFFE46, 20}, {0xFFE47, 20}, {0x09, 4}, {0x3A, 6}, {0xF8C, 12}, {0xFFE48, 20}, {0xFFE49, 20}, {0xFFE4A, 20}, {0xFFE4B, 20}, {0xFFE4C, 20}, {0xFFE4D, 20}, {0xFFE4E, 20}, {0xFFE4F, 20}, {0xFFE50, 20}, {0x5A, 7}, {0xF8D, 12}, {0xFFE51, 20}, {0xFFE52, 20}, {0xFFE53, 20}, {0xFFE54, 20}, {0xFFE55, 20}, {0xFFE56, 20}, {0xFFE57, 20}, {0xFFE58, 20}, {0xFFE59, 20}, {0xFFE5A, 20}};
 */
 
-// --- TABELAS HUFFMAN PADRÃO (Anexo K da especificação JPEG) ---
+// --- STANDARD HUFFMAN TABLES (JPEG Annex K) ---
 
-// Tabela DC de Luminância (12 símbolos para as categorias 0-11)
+// Luminance DC table (12 symbols for categories 0-11)
 HuffmanCode g_huff_dc_luma_table[12] = {
     {0x00, 2},
     {0x02, 3},
@@ -142,7 +142,7 @@ HuffmanCode g_huff_dc_luma_table[12] = {
     {0xFE, 8},
     {0x1FE, 9}};
 
-// Tabela DC de Crominância (12 símbolos para as categorias 0-11)
+// Chrominance DC table (12 symbols for categories 0-11)
 HuffmanCode g_huff_dc_chroma_table[12] = {
     {0x00, 2},
     {0x01, 2},
@@ -157,23 +157,23 @@ HuffmanCode g_huff_dc_chroma_table[12] = {
     {0x3FE, 10},
     {0x7FE, 11}};
 
-// Tabela AC de Luminância (256 símbolos para (RUN, SIZE))
+// Luminance AC table (256 symbols for (RUN, SIZE))
 HuffmanCode g_huff_ac_luma_table[256] = {
-    /* Símbolos de 0x00 a 0xFF. O índice é o símbolo (RUN << 4) | SIZE. */
+    /* Symbols from 0x00 to 0xFF. The index equals (RUN << 4) | SIZE. */
     /* 0x00 (EOB) */ {0x0A, 4}, /* 0x01 */ {0x00, 2}, /* 0x02 */ {0x01, 2}, /* 0x03 */ {0x04, 3},
     /* 0x04 */ {0x0B, 4}, /* 0x05 */ {0x1A, 5}, /* 0x06 */ {0x78, 7}, /* 0x07 */ {0xF7C, 12},
     /* 0x08 */ {0, 0}, /* 0x09 */ {0, 0}, /* 0x0A */ {0, 0}, /* 0x0B */ {0, 0},
     /* 0x0C */ {0, 0}, /* 0x0D */ {0, 0}, /* 0x0E */ {0, 0}, /* 0x0F */ {0, 0},
     /* 0x10 */ {0, 0}, /* 0x11 */ {0x05, 3}, /* 0x12 */ {0x1B, 5}, /* 0x13 */ {0x38, 6},
-    /* 0x14 */ {0x58, 7}, /* 0x15 */ {0x98, 8}, /* 0x16 */ {0xF7D, 12}, /* ... etc (valores zerados foram omitidos) */
-    [0xF0] = {0xFFE33, 20}                                              // ZRL (Zero-Run-Length) - Exemplo, valor pode variar.
+    /* 0x14 */ {0x58, 7}, /* 0x15 */ {0x98, 8}, /* 0x16 */ {0xF7D, 12}, /* ... zeroed values omitted for brevity */
+    [0xF0] = {0xFFE33, 20}                                              // ZRL (Zero-Run-Length) - illustrative value
 };
 
-// Tabela AC de Crominância (256 símbolos para (RUN, SIZE))
+// Chrominance AC table (256 symbols for (RUN, SIZE))
 HuffmanCode g_huff_ac_chroma_table[256] = {
     /* 0x00 (EOB) */ {0x0A, 4}, /* 0x01 */ {0x00, 2}, /* 0x02 */ {0x01, 2}, /* 0x03 */ {0x02, 3},
     /* 0x04 */ {0x0A, 4}, /* 0x05 */ {0x18, 5}, /* 0x06 */ {0x38, 6}, /* 0x07 */ {0x78, 7},
-    /* ... etc (valores zerados foram omitidos) */
+    /* ... zeroed values omitted for brevity */
     [0xF0] = {0xFFE48, 20} // ZRL (Zero-Run-Length)
 };
 HuffmanTable g_luma_huff_tables = {g_huff_dc_luma_table, g_huff_ac_luma_table};
@@ -246,11 +246,11 @@ void init_jpeg_huffman_tables(void)
     build_canonical_table(STD_CHROMA_AC_BITS, STD_CHROMA_AC_VALS, 162, g_huff_ac_chroma_table, 256);
 }
 //==================================================================================
-// LÓGICA DE HUFFMAN - ESCRITA (ENCODING)
+// HUFFMAN LOGIC - ENCODING
 //==================================================================================
 
 /**
- * @brief Inicializa a estrutura de escrita de bitstream.
+ * @brief Initializes the bitstream writer structure.
  */
 void bitstream_writer_init(BitstreamWriter *writer, FILE *f)
 {
@@ -260,12 +260,12 @@ void bitstream_writer_init(BitstreamWriter *writer, FILE *f)
 }
 
 /**
- * @brief Escreve um byte completo para o arquivo, aplicando byte-stuffing se necessário.
+ * @brief Writes a full byte to the file, applying byte stuffing when required.
  */
 static void write_byte(BitstreamWriter *writer)
 {
     fputc(writer->buffer, writer->file);
-    // Regra de "Byte Stuffing" do JPEG: se o byte for 0xFF, um 0x00 deve ser inserido.
+    // JPEG byte-stuffing rule: when the byte is 0xFF, insert an extra 0x00.
     if (writer->buffer == 0xFF)
     {
         fputc(0x00, writer->file);
@@ -275,7 +275,7 @@ static void write_byte(BitstreamWriter *writer)
 }
 
 /**
- * @brief Adiciona uma sequência de bits (um código) ao buffer.
+ * @brief Appends a sequence of bits (a code) to the buffer.
  */
 static void write_bits(BitstreamWriter *writer, uint32_t code, int length)
 {
@@ -292,13 +292,13 @@ static void write_bits(BitstreamWriter *writer, uint32_t code, int length)
 }
 
 /**
- * @brief Garante que qualquer bit remanescente no buffer seja escrito no arquivo (padding).
+ * @brief Flushes any remaining bits in the buffer to the file (padding).
  */
 void bitstream_writer_flush(BitstreamWriter *writer)
 {
     if (writer->bit_count > 0)
     {
-        // Completa o byte com 1s, conforme especificação JPEG para padding.
+        // Complete the byte with ones, as required by the JPEG padding rule.
         writer->buffer <<= (8 - writer->bit_count);
         writer->buffer |= (0xFF >> writer->bit_count);
         write_byte(writer);
@@ -306,11 +306,11 @@ void bitstream_writer_flush(BitstreamWriter *writer)
 }
 
 /**
- * @brief Converte um valor de coeficiente em sua Categoria e Amplitude.
- * Esta é uma etapa CRUCIAL e segue as tabelas F.1 e F.2 da especificação JPEG.
- * @param value O valor do coeficiente (ex: -5, 27).
- * @param amplitude_bits Ponteiro para armazenar os bits de amplitude calculados.
- * @return A categoria do coeficiente (tamanho em bits da amplitude).
+ * @brief Converts a coefficient value into its Category and Amplitude representation.
+ * This is a crucial step defined by tables F.1 and F.2 of the JPEG specification.
+ * @param value Coefficient value (e.g., -5, 27).
+ * @param amplitude_bits Output pointer that receives the amplitude bits.
+ * @return Coefficient category (bit-length of the amplitude).
  */
 static int get_category_and_amplitude(int value, uint32_t *amplitude_bits)
 {
@@ -323,15 +323,15 @@ static int get_category_and_amplitude(int value, uint32_t *amplitude_bits)
     int temp = (value > 0) ? value : -value;
     int category = 0;
 
-    // Encontra a categoria (equivalente a floor(log2(abs(value))) + 1)
+    // Determine the category (floor(log2(abs(value))) + 1)
     while (temp > 0)
     {
         temp >>= 1;
         category++;
     }
 
-    // Para valores positivos, a amplitude são os próprios bits do valor.
-    // Para negativos, é o valor em complemento de 1.
+    // Positive values use the straightforward binary representation.
+    // Negative values are encoded in ones' complement form.
     if (value > 0)
     {
         *amplitude_bits = (uint32_t)value;
@@ -344,23 +344,23 @@ static int get_category_and_amplitude(int value, uint32_t *amplitude_bits)
 }
 
 /**
- * @brief Codifica um bloco 8x8 de coeficientes quantizados.
- * @param block Bloco 8x8 de inteiros (após DCT e quantização).
- * @param prev_dc Ponteiro para o valor DC do bloco anterior (codificação diferencial).
- * @param huff_tables As tabelas de Huffman (DC e AC) a serem usadas.
- * @param writer O escritor de bitstream para o arquivo de saída.
+ * @brief Encodes one 8x8 block of quantized coefficients.
+ * @param block 8x8 integer block (after DCT and quantization).
+ * @param prev_dc Pointer to the previous block DC value (for differential coding).
+ * @param huff_tables Huffman tables (DC and AC) to use.
+ * @param writer Bitstream writer for the output file.
  */
 void encode_block(int block[BLOCK_SIZE][BLOCK_SIZE], int *prev_dc, HuffmanTable *huff_tables, BitstreamWriter *writer)
 {
     int zigzag_coeffs[64];
 
-    // 1. Aplicar o Zig-Zag Scan
+    // 1. Apply the zig-zag scan
     for (int i = 0; i < 64; i++)
     {
         zigzag_coeffs[i] = block[g_zigzag_map[i] / BLOCK_SIZE][g_zigzag_map[i] % BLOCK_SIZE];
     }
 
-    // 2. Codificar o Coeficiente DC
+    // 2. Encode the DC coefficient
     int dc_diff = zigzag_coeffs[0] - *prev_dc;
     *prev_dc = zigzag_coeffs[0];
 
@@ -373,7 +373,7 @@ void encode_block(int block[BLOCK_SIZE][BLOCK_SIZE], int *prev_dc, HuffmanTable 
         write_bits(writer, dc_amplitude, dc_category);
     }
 
-    // 3. Codificar os 63 Coeficientes AC
+    // 3. Encode the 63 AC coefficients
     int zero_run_count = 0;
     for (int i = 1; i < 64; i++)
     {
@@ -383,7 +383,7 @@ void encode_block(int block[BLOCK_SIZE][BLOCK_SIZE], int *prev_dc, HuffmanTable 
         }
         else
         {
-            // Se acumulou mais de 15 zeros, escreve o código ZRL
+            // Emit ZRL if more than 15 zeros were accumulated
             while (zero_run_count >= 16)
             {
                 write_bits(writer, huff_tables->ac_table[0xF0].code, huff_tables->ac_table[0xF0].length); // ZRL (15,0)
@@ -393,17 +393,17 @@ void encode_block(int block[BLOCK_SIZE][BLOCK_SIZE], int *prev_dc, HuffmanTable 
             uint32_t ac_amplitude;
             int ac_category = get_category_and_amplitude(zigzag_coeffs[i], &ac_amplitude);
 
-            // O símbolo é uma combinação do número de zeros (RUN) e da categoria (SIZE)
+            // Symbol combines zero run length (RUN) and coefficient category (SIZE)
             uint8_t run_size_symbol = (zero_run_count << 4) | ac_category;
 
             write_bits(writer, huff_tables->ac_table[run_size_symbol].code, huff_tables->ac_table[run_size_symbol].length);
             write_bits(writer, ac_amplitude, ac_category);
 
-            zero_run_count = 0; // Reseta a contagem de zeros
+            zero_run_count = 0; // Reset zero counter
         }
     }
 
-    // Se o restante do bloco for de zeros (zero_run_count > 0), escreve o código EOB
+    // Emit EOB if remaining coefficients are zeros
     if (zero_run_count > 0)
     {
         write_bits(writer, huff_tables->ac_table[0x00].code, huff_tables->ac_table[0x00].length); // EOB (0,0)
@@ -411,21 +411,21 @@ void encode_block(int block[BLOCK_SIZE][BLOCK_SIZE], int *prev_dc, HuffmanTable 
 }
 
 //==================================================================================
-// LÓGICA DE HUFFMAN - LEITURA (DECODING)
+// HUFFMAN LOGIC - DECODING
 //==================================================================================
 
 /**
- * @brief Inicializa a estrutura de leitura de bitstream.
+ * @brief Initializes the bitstream reader structure.
  */
 void bitstream_reader_init(BitstreamReader *reader, FILE *f)
 {
     reader->file = f;
     reader->buffer = 0;
-    reader->bit_position = -1; // Força a primeira leitura de um byte
+    reader->bit_position = -1; // Force the first byte read
 }
 
 /**
- * @brief Lê um único bit do arquivo.
+ * @brief Reads a single bit from the file.
  */
 static int read_bit(BitstreamReader *reader)
 {
@@ -435,13 +435,13 @@ static int read_bit(BitstreamReader *reader)
         if (byte == EOF)
             return -1;
 
-        // Trata o byte-stuffing: se for 0xFF seguido de 0x00, ignora o 0x00
+        // Handle byte stuffing: if 0xFF is followed by 0x00, discard the 0x00
         if (byte == 0xFF)
         {
             int next_byte = fgetc(reader->file);
             if (next_byte == 0x00)
             {
-                // É um byte recheado, byte válido é 0xFF
+                // Stuffed byte: the actual payload byte is 0xFF
             }
             else if (next_byte == EOF)
             {
@@ -449,7 +449,7 @@ static int read_bit(BitstreamReader *reader)
             }
             else
             {
-                // É um marcador JPEG, retorna o byte para o stream
+                // Encountered a JPEG marker; push byte back to the stream
                 ungetc(next_byte, reader->file);
             }
         }
@@ -463,7 +463,7 @@ static int read_bit(BitstreamReader *reader)
 }
 
 /**
- * @brief Procura por um código de Huffman no bitstream que corresponda a um na tabela.
+ * @brief Searches the bitstream for a Huffman code present in the table.
  */
 static int find_huffman_symbol(BitstreamReader *reader, HuffmanCode table[], int table_size)
 {
@@ -471,7 +471,7 @@ static int find_huffman_symbol(BitstreamReader *reader, HuffmanCode table[], int
     int length = 0;
 
     while (length < 16)
-    { // Limite de 16 bits para códigos Huffman no JPEG padrão
+    { // JPEG baseline limits Huffman codes to 16 bits
         int bit = read_bit(reader);
         if (bit == -1)
             return -1; // Fim do arquivo
@@ -479,20 +479,20 @@ static int find_huffman_symbol(BitstreamReader *reader, HuffmanCode table[], int
         current_code = (current_code << 1) | bit;
         length++;
 
-        // Procura na tabela por um código correspondente
+        // Check whether the current code exists in the table
         for (int i = 0; i < table_size; i++)
         {
             if (table[i].length == length && table[i].code == current_code)
             {
-                return i; // Retorna o SÍMBOLO (índice), não o código
+                return i; // Return the symbol (table index), not the code itself
             }
         }
     }
-    return -1; // Código não encontrado
+    return -1; // Code not found
 }
 
 /**
- * @brief Lê os bits de amplitude após um símbolo de Huffman ser encontrado.
+ * @brief Reads the amplitude bits after a Huffman symbol has been decoded.
  */
 static int read_amplitude(BitstreamReader *reader, int category)
 {
@@ -501,14 +501,14 @@ static int read_amplitude(BitstreamReader *reader, int category)
     {
         int bit = read_bit(reader);
         if (bit == -1)
-            return -1; // Erro/EOF
+            return -1; // Error / EOF
         amplitude = (amplitude << 1) | bit;
     }
     return amplitude;
 }
 
 /**
- * @brief Reconstrói o valor original do coeficiente a partir de sua categoria e amplitude.
+ * @brief Rebuilds the original coefficient value from its category and amplitude.
  */
 static int reconstruct_value(int category, int amplitude)
 {
@@ -519,22 +519,22 @@ static int reconstruct_value(int category, int amplitude)
 
     if (amplitude >= half_range)
     {
-        return amplitude; // Positivo
+        return amplitude; // Positive value
     }
     else
     {
-        return amplitude - ((1 << category) - 1); // Negativo
+        return amplitude - ((1 << category) - 1); // Negative value
     }
 }
 
 /**
- * @brief Decodifica um bloco 8x8 de coeficientes do bitstream.
+ * @brief Decodes an 8x8 block of coefficients from the bitstream.
  */
 void decode_block(int block[BLOCK_SIZE][BLOCK_SIZE], int *prev_dc, HuffmanTable *huff_tables, BitstreamReader *reader)
 {
-    int zigzag_coeffs[64] = {0}; // Inicializa com zeros
+    int zigzag_coeffs[64] = {0}; // Initialize with zeros
 
-    // 1. Decodificar o Coeficiente DC
+    // 1. Decode the DC coefficient
     int dc_category = find_huffman_symbol(reader, huff_tables->dc_table, 12);
     if (dc_category >= 0 && dc_category < 12)
     {
@@ -544,28 +544,28 @@ void decode_block(int block[BLOCK_SIZE][BLOCK_SIZE], int *prev_dc, HuffmanTable 
         *prev_dc = zigzag_coeffs[0];
     }
 
-    // 2. Decodificar os 63 Coeficientes AC
+    // 2. Decode the 63 AC coefficients
     for (int i = 1; i < 64;)
     {
         int ac_symbol = find_huffman_symbol(reader, huff_tables->ac_table, 256);
         if (ac_symbol == -1)
-            break; // Erro ou fim do stream
+            break; // Error or end of stream
 
         if (ac_symbol == 0x00)
         {          // EOB
-            break; // O resto do bloco é zero
+            break; // Remaining coefficients are zero
         }
 
         if (ac_symbol == 0xF0)
         {            // ZRL
-            i += 16; // Pula 16 zeros
+            i += 16; // Skip 16 zeros
             continue;
         }
 
         int run = (ac_symbol >> 4) & 0x0F;
         int size = ac_symbol & 0x0F;
 
-        i += run; // Pula 'run' zeros
+        i += run; // Skip `run` zeros
 
         if (i < 64 && size > 0)
         {
@@ -575,7 +575,7 @@ void decode_block(int block[BLOCK_SIZE][BLOCK_SIZE], int *prev_dc, HuffmanTable 
         i++;
     }
 
-    // 3. Aplicar Zig-Zag Inverso
+    // 3. Apply the inverse zig-zag scan
     for (int i = 0; i < 64; i++)
     {
         block[g_zigzag_map[i] / BLOCK_SIZE][g_zigzag_map[i] % BLOCK_SIZE] = zigzag_coeffs[i];
@@ -795,33 +795,33 @@ unsigned char **allocate_y_u8(BITMAPINFOHEADER InfoHeader)
 
 double ***allocate_blocks_Y(int num_blocks)
 {
-    // 1. Aloca a "lista" de ponteiros para as matrizes 8x8 (double**)
+    // 1. Allocate the list of pointers to 8x8 matrices (double**)
     double ***blocks = (double ***)malloc(num_blocks * sizeof(double **));
     if (blocks == NULL)
     {
-        // Falha na alocação
+        // Allocation failed
         return NULL;
     }
 
-    // 2. Para cada bloco na lista, aloca uma matriz 8x8
+    // 2. For each block in the list, allocate an 8x8 matrix
     for (int k = 0; k < num_blocks; k++)
     {
-        // 2a. Aloca as 8 linhas (ponteiros para double*) para a matriz k
+        // 2a. Allocate the eight row pointers (double*) for matrix k
         blocks[k] = (double **)malloc(BLOCK_SIZE * sizeof(double *));
         if (blocks[k] == NULL)
         {
-            // Falha na alocação, precisa liberar o que já foi alocado
-            // (código de limpeza omitido por simplicidade, mas importante em produção)
+            // Allocation failed; previously allocated memory should be released
+            // (cleanup code omitted here for brevity)
             return NULL;
         }
 
-        // 2b. Para cada linha da matriz k, aloca os 8 elementos (doubles)
+        // 2b. Allocate the eight elements (doubles) for each row
         for (int i = 0; i < BLOCK_SIZE; i++)
         {
             blocks[k][i] = (double *)malloc(BLOCK_SIZE * sizeof(double));
             if (blocks[k][i] == NULL)
             {
-                // Falha na alocação
+                // Allocation failed
                 return NULL;
             }
         }
@@ -832,33 +832,33 @@ double ***allocate_blocks_Y(int num_blocks)
 
 Chromancy ***allocate_blocks_chr(int num_blocks)
 {
-    // 1. Aloca a "lista" de ponteiros para as matrizes 8x8 (Chromancy**)
+    // 1. Allocate the list of pointers to 8x8 matrices (Chromancy**)
     Chromancy ***blocks = (Chromancy ***)malloc(num_blocks * sizeof(Chromancy **));
     if (blocks == NULL)
     {
-        // Falha na alocação
+        // Allocation failed
         return NULL;
     }
 
-    // 2. Para cada bloco na lista, aloca uma matriz 8x8
+    // 2. For each block in the list, allocate an 8x8 matrix
     for (int k = 0; k < num_blocks; k++)
     {
-        // 2a. Aloca as 8 linhas (ponteiros para Chromancy*) para a matriz k
+        // 2a. Allocate the eight row pointers (Chromancy*) for matrix k
         blocks[k] = (Chromancy **)malloc(BLOCK_SIZE * sizeof(Chromancy *));
         if (blocks[k] == NULL)
         {
-            // Falha na alocação, precisa liberar o que já foi alocado
-            // (código de limpeza omitido por simplicidade, mas importante em produção)
+            // Allocation failed; previously allocated memory should be released
+            // (cleanup code omitted here for brevity)
             return NULL;
         }
 
-        // 2b. Para cada linha da matriz k, aloca os 8 elementos (Chromancys)
+        // 2b. Allocate the eight Chromancy elements for each row
         for (int i = 0; i < BLOCK_SIZE; i++)
         {
             blocks[k][i] = (Chromancy *)malloc(BLOCK_SIZE * sizeof(Chromancy));
             if (blocks[k][i] == NULL)
             {
-                // Falha na alocação
+                // Allocation failed
                 return NULL;
             }
         }
@@ -878,14 +878,14 @@ void free_blocks_Y(double ***blocks, int num_blocks)
         {
             for (int i = 0; i < BLOCK_SIZE; i++)
             {
-                // Libera cada linha da matriz 8x8
+            // Free each row of the 8x8 matrix
                 free(blocks[k][i]);
             }
-            // Libera a matriz 8x8
+            // Free the 8x8 matrix
             free(blocks[k]);
         }
     }
-    // Libera a lista de matrizes
+    // Free the list of matrices
     free(blocks);
 }
 
@@ -900,19 +900,19 @@ void free_blocks_chr(Chromancy ***blocks, int num_blocks)
         {
             for (int i = 0; i < BLOCK_SIZE; i++)
             {
-                // Libera cada linha da matriz 8x8
+                // Free each row of the 8x8 matrix
                 free(blocks[k][i]);
             }
-            // Libera a matriz 8x8
+            // Free the 8x8 matrix
             free(blocks[k]);
         }
     }
-    // Libera a lista de matrizes
+    // Free the list of matrices
     free(blocks);
 }
 
 //==================================================================================
-// DCT E IDCT / YCbCr E RGB / quantization E dequantization 
+// DCT and IDCT / YCbCr and RGB / quantization and dequantization 
 //==================================================================================
 
 
@@ -945,18 +945,17 @@ Pixel **convertBMP(unsigned char **Y, Chromancy **chromancy, BITMAPINFOHEADER *I
     {
         for (int j = 0; j < InfoHeader->Width; j++)
         {
-            // Converte para double ANTES de fazer as contas
+            // Convert to double before performing the calculations
             double y_val = Y[i][j];
             double cb_val = chromancy[i / 2][j / 2].Cb;
             double cr_val = chromancy[i / 2][j / 2].Cr;
 
-            // Calcula os valores temporários em ponto flutuante
+            // Calculate temporary float values
             double r_temp = y_val + 1.402 * (cr_val - 128);
             double g_temp = y_val - 0.344136 * (cb_val - 128) - 0.714136 * (cr_val - 128);
             double b_temp = y_val + 1.772 * (cb_val - 128);
 
-            // "Clamping": Garante que o valor final esteja entre 0 e 255
-            // Em C++, use std::max/min. Em C, você pode usar ifs.
+            // Clamp final values to the [0, 255] range using conditional checks
             Image_upscaled[i][j].R = (unsigned char)fmax(0.0, fmin(255.0, r_temp));
             Image_upscaled[i][j].G = (unsigned char)fmax(0.0, fmin(255.0, g_temp));
             Image_upscaled[i][j].B = (unsigned char)fmax(0.0, fmin(255.0, b_temp));
@@ -968,9 +967,14 @@ Pixel **convertBMP(unsigned char **Y, Chromancy **chromancy, BITMAPINFOHEADER *I
 Chromancy **compressCbCr(Pixel_YCbCr_d **imgYCbCr, BITMAPINFOHEADER *InfoHeader)
 {
 
-    Chromancy **chromancy = (Chromancy **)malloc(InfoHeader->Height * 0.5 * sizeof(Chromancy *)); //
-    for (int i = 0; i < InfoHeader->Height / 2; i++)
-        chromancy[i] = (Chromancy *)malloc(InfoHeader->Width * 0.5 * sizeof(Chromancy));
+    int chr_height = InfoHeader->Height / 2;
+    int chr_width = InfoHeader->Width / 2;
+
+    Chromancy **chromancy = (Chromancy **)malloc(chr_height * sizeof(Chromancy *));
+    for (int i = 0; i < chr_height; i++)
+    {
+        chromancy[i] = (Chromancy *)malloc(chr_width * sizeof(Chromancy));
+    }
 
     for (int i = 0; i < InfoHeader->Height; i++)
     {
@@ -1000,40 +1004,50 @@ void fillBlocks_Y(double ***blocks, int num_blocks, double **Y, BITMAPINFOHEADER
 
     for (int k = 0; k < num_blocks; k++)
     {
-        // Calcula a linha e coluna inicial do bloco 'k' na imagem grande
+        // Compute the starting row and column of block k within the full image
         int start_row = (k / num_blocks_per_row) * BLOCK_SIZE;
         int start_col = (k % num_blocks_per_row) * BLOCK_SIZE;
 
-        // Copia o bloco 8x8 da imagem Y para blocks[k]
+        // Copy the 8x8 block from the Y image into blocks[k]
         for (int i = 0; i < BLOCK_SIZE; i++)
         {
             for (int j = 0; j < BLOCK_SIZE; j++)
             {
-                // A fonte dos dados vem da posição calculada em Y
+                // Source data comes from the computed position in the luminance plane
                 blocks[k][i][j] = Y[start_row + i][start_col + j];
             }
         }
     }
 }
 
-void fillBlocks_chr(Chromancy ***blocks, int num_blocks, Chromancy **Chromancy, BITMAPINFOHEADER InfoHeader)
+void fillBlocks_chr(Chromancy ***blocks, int num_blocks, Chromancy **chromancy_plane, BITMAPINFOHEADER InfoHeader)
 {
-    int num_blocks_per_row = InfoHeader.Width / BLOCK_SIZE;
+    int chr_width = InfoHeader.Width / 2;
+    int chr_height = InfoHeader.Height / 2;
+    int num_blocks_per_row = chr_width / BLOCK_SIZE;
 
     for (int k = 0; k < num_blocks; k++)
     {
-        // Calcula a linha e coluna inicial do bloco 'k' na imagem grande
+        // Compute the starting row and column of block k within the subsampled chroma image
         int start_row = (k / num_blocks_per_row) * BLOCK_SIZE;
         int start_col = (k % num_blocks_per_row) * BLOCK_SIZE;
 
-        // Copia o bloco 8x8 da imagem Y para blocks[k]
+        // Copy the 8x8 block from the chroma plane into blocks[k]
         for (int i = 0; i < BLOCK_SIZE; i++)
         {
+            int row = start_row + i;
+            if (row >= chr_height)
+                continue;
+
             for (int j = 0; j < BLOCK_SIZE; j++)
             {
-                // A fonte dos dados vem da posição calculada em Y
-                blocks[k][i][j].Cb = Chromancy[start_row + i][start_col + j].Cb;
-                blocks[k][i][j].Cr = Chromancy[start_row + i][start_col + j].Cr;
+                int col = start_col + j;
+                if (col >= chr_width)
+                    continue;
+
+                // Source data comes from the computed position in the chroma plane
+                blocks[k][i][j].Cb = chromancy_plane[row][col].Cb;
+                blocks[k][i][j].Cr = chromancy_plane[row][col].Cr;
             }
         }
     }
@@ -1058,6 +1072,49 @@ void mergeBlocks_Y(double ***blocks, int num_blocks, unsigned char **Y_out, BITM
                 if (v > 255) 
                     v = 255;
                 Y_out[start_row + i][start_col + j] = (unsigned char)(v + 0.5);
+            }
+        }
+    }
+}
+
+void mergeBlocks_chr(Chromancy ***blocks, int num_blocks, Chromancy **chromancy_out, BITMAPINFOHEADER InfoHeader)
+{
+    int chr_width = InfoHeader.Width / 2;
+    int chr_height = InfoHeader.Height / 2;
+    int num_blocks_per_row = chr_width / BLOCK_SIZE;
+
+    for (int k = 0; k < num_blocks; k++)
+    {
+        int start_row = (k / num_blocks_per_row) * BLOCK_SIZE;
+        int start_col = (k % num_blocks_per_row) * BLOCK_SIZE;
+
+        for (int i = 0; i < BLOCK_SIZE; i++)
+        {
+            int row = start_row + i;
+            if (row >= chr_height)
+                continue;
+
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
+                int col = start_col + j;
+                if (col >= chr_width)
+                    continue;
+
+                double cb = blocks[k][i][j].Cb;
+                double cr = blocks[k][i][j].Cr;
+
+                if (cb < 0.0)
+                    cb = 0.0;
+                else if (cb > 255.0)
+                    cb = 255.0;
+
+                if (cr < 0.0)
+                    cr = 0.0;
+                else if (cr > 255.0)
+                    cr = 255.0;
+
+                chromancy_out[row][col].Cb = cb;
+                chromancy_out[row][col].Cr = cr;
             }
         }
     }
