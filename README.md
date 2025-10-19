@@ -142,21 +142,28 @@ The following examples illustrate the compression effectiveness (original size �
   </tbody>
 </table>
 
+</table>
 <p align="center">
-  <img src="docs/readme_content/sorvete.png" alt="Figure 8 — sorvete" style=" height:200px; object-fit: contain; margin-right: 1.5%; display: inline-block; vertical-align: top;" />
-  <img src="docs/readme_content/cano.png" alt="Figure 9 — cano" style=" height:200px; object-fit: contain; margin-right: 1.5%; display: inline-block; vertical-align: top;" />
-  <img src="docs/readme_content/lago.png" alt="Figure 10 — lago2" style=" height:200px; object-fit: contain;margin-right: 1.5%; display: inline-block; vertical-align: top;" />
-  <img src="docs/readme_content/paisagem2.png" alt="Figure 10 — lago2" style=" height:200px; object-fit: contain; margin-right: 1.5%; display: inline-block; vertical-align: top;" />
+  <img src="docs/readme_content/sorvete.png" alt="Figure 8 — sorvete" style=" height:450px; object-fit: contain; margin-right: 1.5%; display: inline-block; vertical-align: top;" />
+  <img src="docs/readme_content/cano.png" alt="Figure 9 — cano" style=" height:450px; object-fit: contain; margin-right: 1.5%; display: inline-block; vertical-align: top;" />
 </p>
+
 <table width="100%" style="border: none; border-collapse: collapse;">
   <tr>
     <td width="25%" align="center"><em>Figure 8 — sorvete.bmp</em></td>
     <td width="25%" align="center"><em>Figure 9 — cano.bmp</em></td>
-    <td width="25%" align="center"><em>Figure 10 — lago2.bmp</em></td>
+</table>
+<p align="center">
+  <img src="docs/readme_content/lago.png" alt="Figure 10 — lago2" style=" height:450px; object-fit: contain;margin-right: 1.5%; display: inline-block; vertical-align: top;" />
+  <img src="docs/readme_content/paisagem2.png" alt="Figure 10 — lago2" style=" height:450px; object-fit: contain; margin-right: 1.5%; display: inline-block; vertical-align: top;" />
+</p>
+
+<table>
+
+ <td width="25%" align="center"><em>Figure 10 — lago2.bmp</em></td>
     <td width="25%" align="center"><em>Figure 11 — Paisagem2.bmp</em></td>
   </tr>
 </table>
-
 ---
 
 ### Additional Notes
@@ -169,10 +176,18 @@ The following examples illustrate the compression effectiveness (original size �
 
 ### How to use
 
+Construct the exec file usin the `makefile` builder: 
+```bash
+cd JPEG_compressor
+make
+```
+
 Run the helper script to execute all three compression settings (25%, 50%, 75%) on the sample BMP inputs from `bmp_source/`:
+
 
 ```bash
 bash entrada.sh
 ```
+
 
 This will generate output `.bin` streams and reconstructed `.bmp` files under the `images/` directory for each quality level and input image.
