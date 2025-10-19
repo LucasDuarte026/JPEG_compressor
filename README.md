@@ -96,23 +96,66 @@ At the end of compression, the entropy‑coded bytestream is written to a `.bin`
 
 The following examples illustrate the compression effectiveness (original size → compressed size image thumbnails):
 
-<p align="center">
-  <img src="docs/readme_content/sorvete25.png" alt="Figure 8 — sorvete at 25%" width="35%" />
-  <br>
-  <em>Figure 8 — sorvete.bmp, 11 MB → 179 KB.</em>
-</p>
  
-<p align="center">
-  <img src="docs/readme_content/cano25.png" alt="Figure 9 — cano at 25%" width="35%" />
-  <br>
-  <em>Figure 9 — cano.bmp, 1.0 MB → 118 KB.</em>
-</p>
+<table align="center">
+  <thead>
+    <tr>
+      <th align="center"></th>
+      <th colspan="4" align="center" style="font-size: 25px;">Compression</th>
+    </tr>
+    <tr>
+      <th align="center"></th>
+      <th align="center">Original</th>
+      <th align="center">75%</th>
+      <th align="center">50%</th>
+      <th align="center">25%</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center"><code>Sorvete</code></td>
+      <td align="center"><strong>11.1MB</strong></td>
+      <td align="center">109.0KB(9.0%)</td> <td align="center">92.9KB(8.4%)</td>
+      <td align="center">80.4KB(7.3%)</td>
+    </tr>
+    <tr>
+      <td align="center"><code>Cano</code></td>
+      <td align="center"><strong>1.0MB</strong></td>
+      <td align="center">37.8KB(3.8%)</td>
+      <td align="center">26.5KB(2.6%)</td>
+      <td align="center">18.1KB(1.8%)</td>
+    </tr>
+    <tr>
+      <td align="center"><code>Lago2</code></td>
+      <td align="center"><strong>72.0MB</strong></td>
+      <td align="center">3.4MB(4.7%)</td>
+      <td align="center">2.74MB(3.8%)</td>
+      <td align="center">1.6MB(2.2%)</td>
+    </tr>
+    <tr>
+      <td align="center"><code>Paisagem2</code></td>
+      <td align="center"><strong>59.90MB</strong></td>
+      <td align="center">2.3MB(3.8%)</td>
+      <td align="center">1.9MB(3.2%)</td>
+      <td align="center">1.4MB(2.3%)</td>
+    </tr>
+  </tbody>
+</table>
 
 <p align="center">
-  <img src="docs/readme_content/lago25.png" alt="Figure 10 — lago2 at 25%" width="35%" />
-  <br>
-  <em>Figure 10 — lago2.bmp, 72 MB → 10 MB.</em>
+  <img src="docs/readme_content/sorvete.png" alt="Figure 8 — sorvete" style=" height:200px; object-fit: contain; margin-right: 1.5%; display: inline-block; vertical-align: top;" />
+  <img src="docs/readme_content/cano.png" alt="Figure 9 — cano" style=" height:200px; object-fit: contain; margin-right: 1.5%; display: inline-block; vertical-align: top;" />
+  <img src="docs/readme_content/lago.png" alt="Figure 10 — lago2" style=" height:200px; object-fit: contain;margin-right: 1.5%; display: inline-block; vertical-align: top;" />
+  <img src="docs/readme_content/paisagem2.png" alt="Figure 10 — lago2" style=" height:200px; object-fit: contain; margin-right: 1.5%; display: inline-block; vertical-align: top;" />
 </p>
+<table width="100%" style="border: none; border-collapse: collapse;">
+  <tr>
+    <td width="25%" align="center"><em>Figure 8 — sorvete.bmp</em></td>
+    <td width="25%" align="center"><em>Figure 9 — cano.bmp</em></td>
+    <td width="25%" align="center"><em>Figure 10 — lago2.bmp</em></td>
+    <td width="25%" align="center"><em>Figure 11 — Paisagem2.bmp</em></td>
+  </tr>
+</table>
 
 ---
 
