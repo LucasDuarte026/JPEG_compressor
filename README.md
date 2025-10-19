@@ -142,28 +142,33 @@ The following examples illustrate the compression effectiveness (original size �
   </tbody>
 </table>
 
-</table>
-<p align="center">
-  <img src="docs/readme_content/sorvete.png" alt="Figure 8 — sorvete" style=" height:450px; object-fit: contain; margin-right: 1.5%; display: inline-block; vertical-align: top;" />
-  <img src="docs/readme_content/cano.png" alt="Figure 9 — cano" style=" height:450px; object-fit: contain; margin-right: 1.5%; display: inline-block; vertical-align: top;" />
-</p>
+<div align="center">
+  <div style="display: inline-block; width: 48%; vertical-align: top; text-align: center;">
+    <img src="docs/readme_content/sorvete.png" alt="Figure 8 — sorvete" style="height:450px; object-fit: contain; max-width: 100%;" />
+    <br/>
+    <em>Figure 8 — sorvete.bmp</em>
+  </div>
 
-<table width="100%" style="border: none; border-collapse: collapse;">
-  <tr>
-    <td width="25%" align="center"><em>Figure 8 — sorvete.bmp</em></td>
-    <td width="25%" align="center"><em>Figure 9 — cano.bmp</em></td>
-</table>
-<p align="center">
-  <img src="docs/readme_content/lago.png" alt="Figure 10 — lago2" style=" height:450px; object-fit: contain;margin-right: 1.5%; display: inline-block; vertical-align: top;" />
-  <img src="docs/readme_content/paisagem2.png" alt="Figure 10 — lago2" style=" height:450px; object-fit: contain; margin-right: 1.5%; display: inline-block; vertical-align: top;" />
-</p>
+  <div style="display: inline-block; width: 48%; vertical-align: top; text-align: center;">
+    <img src="docs/readme_content/cano.png" alt="Figure 9 — cano" style="height:450px; object-fit: contain; max-width: 100%;" />
+    <br/>
+    <em>Figure 9 — cano.bmp</em>
+  </div>
+</div>
 
-<table>
+<div align="center">
+  <div style="display: inline-block; width: 48%; vertical-align: top; text-align: center;">
+    <img src="docs/readme_content/lago.png" alt="Figure 10 — lago2" style="height:450px; object-fit: contain; max-width: 100%;" />
+    <br/>
+    <em>Figure 10 — lago2.bmp</em>
+  </div>
 
- <td width="25%" align="center"><em>Figure 10 — lago2.bmp</em></td>
-    <td width="25%" align="center"><em>Figure 11 — Paisagem2.bmp</em></td>
-  </tr>
-</table>
+  <div style="display: inline-block; width: 48%; vertical-align: top; text-align: center;">
+    <img src="docs/readme_content/paisagem2.png" alt="Figure 11 — Paisagem2" style="height:450px; object-fit: contain; max-width: 100%;" />
+    <br/>
+    <em>Figure 11 — Paisagem2.bmp</em>
+  </div>
+</div>
 ---
 
 ### Additional Notes
